@@ -7,6 +7,7 @@ import
     installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib';
 import { join } from 'path';
+import { Init_MainWindowBus } from './Window/MainWindowBus';
 /**
  *  全局Window
  */
@@ -27,6 +28,36 @@ export class GMethod
         //GMethod.createTrayIcon();
     }
 
+    public static SetTrayState(isTray:boolean):boolean
+    {
+      if (isTray)
+      {
+        //进入托盘状态
+        if (GWin.MainWindow != null)
+        {
+          GWin.MainWindow.setSkipTaskbar(true);
+          GWin.MainWindow.hide();
+        }
+        GMethod.createTrayIcon();
+      }
+      else 
+      {
+        //退出托盘状态
+        if(GWin.MainWindow != null)
+        {
+          GWin.MainWindow.show();
+          GWin.MainWindow.setSkipTaskbar(false);
+          if ( GWin.TrayIcon != null &&
+               !GWin.TrayIcon.isDestroyed() )
+          {
+            GWin.TrayIcon.destroy();
+            GWin.TrayIcon = null;
+          }
+        }
+      }
+      return true;
+    }
+
     private static createMainWindow():void
     {
       // Create the browser window.
@@ -42,8 +73,9 @@ export class GMethod
           }
         });
         
-        Init_Decompress();
-        //Menu.setApplicationMenu(null);
+        Init_MainWindowBus();
+        Menu.setApplicationMenu(null);
+
         if (process.env.WEBPACK_DEV_SERVER_URL) 
         {
           // Load the url of the dev server if in development mode
@@ -63,14 +95,9 @@ export class GMethod
         GWin.MainWindow.on('closed', () => {
           GWin.MainWindow = null
         });
-        GWin.MainWindow.on('minimize',(ev:any)=>
+        GWin.MainWindow.on('minimize', ( ev:any ) =>
         {
-          if (GWin.MainWindow !=null)
-          {
-            GWin.MainWindow.setSkipTaskbar(true);
-            GWin.MainWindow.hide();
-            GMethod.createTrayIcon();
-          }
+          GMethod.SetTrayState(true);
           ev.preventDefault();
         });
     }
@@ -94,18 +121,7 @@ export class GMethod
           //type: 'radio',
           click:()=>
           {
-            
-            if(GWin.MainWindow != null)
-            {
-              GWin.MainWindow.show();
-              GWin.MainWindow.setSkipTaskbar(false);
-              if ( GWin.TrayIcon != null &&
-                   !GWin.TrayIcon.isDestroyed() )
-              {
-                GWin.TrayIcon.destroy();
-                GWin.TrayIcon = null;
-              }
-            }
+            GMethod.SetTrayState(false);
           } 
         },
         { 
