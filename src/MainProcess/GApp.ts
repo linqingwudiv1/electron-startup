@@ -1,3 +1,4 @@
+'use strict'
 import { app,BrowserWindow, Menu, Tray } from "electron";
 import Init_Decompress from './ElectronEventBus/unzip';
 import 
@@ -5,6 +6,7 @@ import
     createProtocol,
     installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib';
+import { join } from 'path';
 /**
  *  全局Window
  */
@@ -22,7 +24,7 @@ export class GMethod
     public static createWindow ():void 
     {
         GMethod.createMainWindow();
-        GMethod.createTrayIcon();
+        //GMethod.createTrayIcon();
     }
 
     private static createMainWindow():void
@@ -63,6 +65,13 @@ export class GMethod
         });
         GWin.MainWindow.on('minimize',(ev:any)=>
         {
+          if (GWin.MainWindow !=null)
+          {
+            GWin.MainWindow.setSkipTaskbar(true);
+            GWin.MainWindow.hide();
+            GMethod.createTrayIcon();
+          }
+          ev.preventDefault();
         });
     }
 
@@ -71,21 +80,43 @@ export class GMethod
      */
     private static createTrayIcon():void
     {
-      GWin.TrayIcon = new Tray('ico.jpg')
+      if ( GWin.TrayIcon != null && 
+           GWin.TrayIcon.isDestroyed() )
+      {
+        GWin.TrayIcon.destroy();
+        GWin.TrayIcon = null;
+      }
+      GWin.TrayIcon = new Tray('ico.jpg');
+
       const contextMenu = Menu.buildFromTemplate([
-        { label: '显示', type: 'radio',checked: true,click:()=>
+        { 
+          label: '显示', 
+          //type: 'radio',
+          click:()=>
           {
+            
             if(GWin.MainWindow != null)
             {
               GWin.MainWindow.show();
+              GWin.MainWindow.setSkipTaskbar(false);
+              if ( GWin.TrayIcon != null &&
+                   !GWin.TrayIcon.isDestroyed() )
+              {
+                GWin.TrayIcon.destroy();
+                GWin.TrayIcon = null;
+              }
             }
           } 
         },
         { 
           label: '退出', 
-          type: 'radio' 
+          //type: 'radio' 
+          click:()=>
+          {
+            app.quit();
+          }
         }
-      ])
+      ]);
 
       GWin.TrayIcon.setToolTip('更新启动器');
       GWin.TrayIcon.setContextMenu(contextMenu);

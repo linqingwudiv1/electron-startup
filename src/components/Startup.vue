@@ -33,6 +33,7 @@
 
 <style scoped lang="stylus">
 .main-com
+  //padding 8px;
   user-select none;
   width :100vw;
   height: 100vh;
