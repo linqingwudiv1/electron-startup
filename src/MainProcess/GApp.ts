@@ -1,5 +1,6 @@
 'use strict'
 import { app,BrowserWindow, Menu, Tray } from "electron";
+import Store from 'electron-store';
 import Init_Decompress from './ElectronEventBus/unzip';
 import 
 {
@@ -7,6 +8,7 @@ import
     installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib';
 import { join } from 'path';
+
 import { Init_MainWindowBus } from './Window/MainWindowBus';
 /**
  *  全局Window
@@ -15,6 +17,10 @@ export class GWin
 {
     public static MainWindow:BrowserWindow|null = null;
     public static TrayIcon:Tray|null = null;
+}
+
+type SystemStore = {
+  CacheDir: string
 }
 
 /**
@@ -28,6 +34,24 @@ export class GMethod
         //GMethod.createTrayIcon();
     }
 
+    /**
+     * 
+     */
+    public static GetSystemStore():Store<SystemStore>
+    {
+      const store = new Store<SystemStore>({
+        defaults: {
+          CacheDir: process.cwd() + '/cache/'
+        }
+      });
+      return store;
+    
+    }
+
+    /**
+     * 托盘
+     * @param isTray true 托盘/ flase 退出托盘 
+     */
     public static SetTrayState(isTray:boolean):boolean
     {
       if (isTray)

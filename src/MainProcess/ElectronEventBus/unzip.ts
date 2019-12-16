@@ -4,8 +4,8 @@ import {GWin} from '@/MainProcess/GApp';
 import { dirname } from 'path';
 const AdmZip = require('adm-zip') ;
 
-const UnzipDir:string  = "d:/temp/";
 
+const UnzipDir:string  = "d:/temp/";
 
 
 function Init_Decompress()

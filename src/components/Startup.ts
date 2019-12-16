@@ -1,7 +1,7 @@
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {shell} from 'electron';
-import { createWriteStream, fstat, existsSync, Stats, statSync } from 'fs';
+import { createWriteStream, fstat, existsSync, Stats, statSync, mkdirSync } from 'fs';
 
 import request from 'request';
 import { Readable } from 'stream';
@@ -15,9 +15,18 @@ import { DownloadUpdateZip } from '@/API/core';
 
 const AdmZip = require('adm-zip');
 
-const Cache_Base_Dir:string  = "d:/temp/";
-const Cache_File_Name:Array<string> = [];
 
+const Cache_Base_Dir:string = process.cwd() + "/cache/";
+
+
+//mkdirSync(Cache_Base_Dir);
+// if (statSync(Cache_Base_Dir))
+// {
+
+// }
+
+
+const Cache_File_Name:Array<string> = [];
 for(let i = 0;i < 10;i++)
 {
   Cache_File_Name.push(Cache_Base_Dir + `${i}.zip`);
@@ -50,6 +59,8 @@ export default class StartupComponent extends Vue
 
   mounted():void 
   {
+    //GMethod.GetSystemStore().set('CacheDir','-------------------test');
+    console.log(GMethod.GetSystemStore().get('CacheDir'));
   }
 
   public get percentage_downprocess():number
@@ -98,7 +109,7 @@ export default class StartupComponent extends Vue
       if( existsSync(zipPath)    && 
           statSync(zipPath).size >  0)
       {
-        const UnzipDir:string = "d:/temp/";
+        const UnzipDir:string =  process.cwd() + "/temp/";
 
         let zip = new AdmZip(zipPath);
         let zipEntries = zip.getEntries(); 
