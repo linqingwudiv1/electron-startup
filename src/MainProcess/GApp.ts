@@ -35,17 +35,25 @@ export class GMethod
     }
 
     /**
-     * 
+     * 系统配置对象 
+     */
+    private static sysStore?:Store<SystemStore> = undefined;
+
+    /**
+     * 系统配置
      */
     public static GetSystemStore():Store<SystemStore>
     {
-      const store = new Store<SystemStore>({
-        defaults: {
-          CacheDir: process.cwd() + '/cache/'
-        }
-      });
-      return store;
-    
+      if (GMethod.sysStore == undefined)
+      {
+        GMethod.sysStore = new Store<SystemStore>({
+          defaults: {
+            CacheDir: process.cwd() + '/cache/'
+          }
+        });
+      }
+
+      return GMethod.sysStore;   
     }
 
     /**
@@ -54,6 +62,7 @@ export class GMethod
      */
     public static SetTrayState(isTray:boolean):boolean
     {
+
       if (isTray)
       {
         //进入托盘状态
