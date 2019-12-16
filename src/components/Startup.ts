@@ -194,7 +194,6 @@ export default class StartupComponent extends Vue
    */
   public onclick_startup():void
   {
-    console.log(`--test--`);
     ipcRenderer.send('emp_ontray',true);
     shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
     //this.AppInfo.version = '1.0.0';
