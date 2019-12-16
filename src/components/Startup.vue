@@ -10,12 +10,17 @@
               <strong></strong>
               {{item}}
             </p>
-            <template v-if="downinfo.curunzipfiles.length > 0 ">
-              <p v-if="downinfo.bunzipping">解压中...</p>
-              <p v-else>解压完成</p>
-            </template>
           </div>
         </div>
+      </div>
+      <div class="statusbar">
+          <template v-if="!bUnzipComplated">
+            <p v-if="downinfo.bunzipping">解压中...</p>
+            <p v-else>解压完成</p>
+          </template>
+          <template v-else>
+            <p style="color:#00000000;">嘻嘻嘻</p>
+          </template>
       </div>
       <div class="footer">
         <div class="ele-item" style="width:100%;">
@@ -55,7 +60,6 @@
     flex :1 0 auto;
     .unzipfilelistcontainer
       flex :1 0 auto;
-      user-select text;
       width:100%;
       #unzipfilelist
         text-align :left;
@@ -64,6 +68,22 @@
         background:grey;
         overflow-y: auto;
         overflow-x:hidden;
+        p
+          user-select: all;
+          margin: 0;
+          padding 5px;
+        p:nth-child(even) 
+          background :rgb(200,200,200);
+        p:nth-child(odd) 
+          background :rgb(200,200,211);
+        p:hover
+          background: rgb(81,104,150);
+  .statusbar
+    p
+      background: lightgrey;
+      margin 0;
+      padding :5px;
+      text-align :right;
   .footer
     height: 108px;
     padding: 10px;

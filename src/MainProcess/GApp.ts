@@ -72,7 +72,7 @@ export class GMethod
         { 
           width: 800, 
           height: 600, 
-          backgroundColor: '#fff',
+          backgroundColor: '#fffff00',
           webPreferences: {
             nodeIntegration: true,
             webSecurity: false, // CORS
