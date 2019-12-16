@@ -9,11 +9,12 @@ import { dirname } from 'path';
 
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import { GMethod } from '@/MainProcess/GApp';
+import _ from 'lodash';
 
 const AdmZip = require('adm-zip');
 
 const Cache_Base_Dir:string  = "d:/temp/";
-const Cache_File_Name:Array<string> =[];
+const Cache_File_Name:Array<string> = [];
 
 for(let i = 0;i < 10;i++)
 {
@@ -22,8 +23,9 @@ for(let i = 0;i < 10;i++)
 
 interface IDownloadPacketInfo
 {
+  bunzipping:boolean;
   contentLength:number;
-  downloadLength:number; 
+  downloadLength:number;
   curunzipfiles:Array<string>;
 };
 
@@ -36,12 +38,14 @@ export default class StartupComponent extends Vue
   
   public downinfo:IDownloadPacketInfo = 
   {
+    bunzipping : false,
     contentLength:0 ,
     downloadLength:0,
     curunzipfiles:[]
   };
 
-  mounted():void {
+  mounted():void 
+  {
     ipcRenderer.on('erp_unzip_onstart', (ev:IpcRendererEvent,len:number)=>
     {
       console.log('erp_unzip_onstart    ', len);
@@ -70,6 +74,11 @@ export default class StartupComponent extends Vue
   {
     let ret_val = 0;
     return ret_val;
+  }
+
+  public get bUnzipComplated():boolean
+  {
+    return false;
   }
 
   /** 进程通讯 **/
@@ -104,12 +113,12 @@ export default class StartupComponent extends Vue
 
   }
 
-  /**直接渲染进程处理 */
+  /**渲染进程处理 */
   private biz_unzip():void
   {
     this.downinfo.curunzipfiles = [];
     request.get('http://192.168.1.131:16677/%E7%AE%A1%E7%90%86%E7%AB%AF.zip')
-    .on('response',(res:Response)=>
+    .on('response', ( res:Response ) =>
     {
       let len:number = parseInt((res.headers as any )['content-length']);
       this.downinfo.contentLength += len;
@@ -121,7 +130,8 @@ export default class StartupComponent extends Vue
     .on('complete', ()=>
     {
       const zipPath = Cache_File_Name[0];
-      if(existsSync(zipPath) && statSync(zipPath).size > 0)
+      if( existsSync(zipPath)    && 
+          statSync(zipPath).size >  0)
       {
         const UnzipDir:string  = "d:/temp/";
         let zip = new AdmZip(zipPath);
@@ -134,24 +144,25 @@ export default class StartupComponent extends Vue
           {
             return;
           }
-    
+          const entryPath = UnzipDir + '/t/' + zipEntry.entryName;
           if ( zipEntry.isDirectory )
           {
-            this.hasFileUnzip( UnzipDir + '/t/' + zipEntry.entryName);
+            this.hasFileUnzip( entryPath );
             return;
           }
     
-          let path = dirname( UnzipDir + '/t/' + zipEntry.entryName );
+          let path = dirname( entryPath );
           //unzip entry....
           zip.extractEntryToAsync(zipEntry, path , true, true, (err:any) =>
           {
             if ( err != undefined )
             {
-              console.log(path,err);
+              console.log(err);
             }
-            this.hasFileUnzip( UnzipDir + '/t/' + zipEntry.entryName);
+            this.hasFileUnzip( entryPath );
           });
         });
+        //this.downinfo.bunzipping = false;
       }
     })
     .on('error', (err:any) =>
@@ -180,22 +191,24 @@ export default class StartupComponent extends Vue
 
   /**
    * 
-   **/
-  public onclick_test():void
+   */
+  public onclick_test = _.throttle( ()=>
   {
+    console.log(`11`);
+    this.downinfo.bunzipping = true;
     this.downinfo.contentLength  = 0;
     this.downinfo.downloadLength = 0;
     this.downinfo.curunzipfiles  = [];
     this.biz_unzip();
-  }
+  }, 500);
 
   /**
-   * 
+   * 启动应用防抖
    */
-  public onclick_startup():void
+  public onclick_startup =_.throttle( ()=>
   {
     ipcRenderer.send('emp_ontray',true);
     shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
-    //this.AppInfo.version = '1.0.0';
-  }
+
+  },500);
 }

@@ -1,5 +1,6 @@
 import Vue, { VNode } from 'vue';
 
+import _ from 'lodash';
 declare global {
   namespace JSX {
     // tslint:disable no-empty-interface

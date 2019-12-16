@@ -6,7 +6,14 @@
         <el-divider></el-divider>
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
-            <p class="item" v-for="(item,index) in downinfo.curunzipfiles" v-bind:key="index">{{item}}</p>
+            <p class="item" v-for="(item,index) in downinfo.curunzipfiles" v-bind:key="index">
+              <strong></strong>
+              {{item}}
+            </p>
+            <template v-if="downinfo.curunzipfiles.length > 0 ">
+              <p v-if="downinfo.bunzipping">解压中...</p>
+              <p v-else>解压完成</p>
+            </template>
           </div>
         </div>
       </div>
@@ -48,6 +55,7 @@
     flex :1 0 auto;
     .unzipfilelistcontainer
       flex :1 0 auto;
+      user-select text;
       width:100%;
       #unzipfilelist
         text-align :left;

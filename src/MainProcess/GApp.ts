@@ -39,6 +39,13 @@ export class GMethod
           GWin.MainWindow.hide();
         }
         GMethod.createTrayIcon();
+        if (GWin.TrayIcon)
+          GWin.TrayIcon.displayBalloon(
+            {
+              icon :undefined,
+              title :'进入系统托盘',
+              content :''
+            });
       }
       else 
       {
@@ -113,29 +120,32 @@ export class GMethod
         GWin.TrayIcon.destroy();
         GWin.TrayIcon = null;
       }
+      
       GWin.TrayIcon = new Tray('ico.jpg');
 
       const contextMenu = Menu.buildFromTemplate([
         { 
-          label: '显示', 
-          //type: 'radio',
+          label: '   显示   ', 
           click:()=>
           {
             GMethod.SetTrayState(false);
           } 
         },
         { 
-          label: '退出', 
-          //type: 'radio' 
+          label: '   退出   ',  
           click:()=>
           {
             app.quit();
           }
         }
       ]);
-
+        GWin.TrayIcon.on('double-click',()=>
+        {
+          GMethod.SetTrayState(false);
+        } );
       GWin.TrayIcon.setToolTip('更新启动器');
       GWin.TrayIcon.setContextMenu(contextMenu);
+
     }
 }
 
