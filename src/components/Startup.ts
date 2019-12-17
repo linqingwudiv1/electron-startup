@@ -100,7 +100,7 @@ export default class StartupComponent extends Vue
         })
         .on('complete', () =>
         {
-          this.downinfo.curunzipfiles.push(resolve( BaseDir, '/temp/', item[0] ));
+          this.downinfo.curunzipfiles.push( '下载完成:' + resolve( BaseDir, '/temp/', item[0] ));
         })
         .pipe( createWriteStream( resolve( BaseDir, '/temp/', item[0] ) ));
       }
@@ -125,7 +125,7 @@ export default class StartupComponent extends Vue
     .on('complete', () =>
     {
       const zipPath = DownCache_Files[0];
-      this.downinfo.curunzipfiles.push(zipPath);
+      this.downinfo.curunzipfiles.push('下载完成:' + zipPath);
       if( existsSync(zipPath)    && 
           statSync(zipPath).size >  0 )
       {
@@ -184,7 +184,7 @@ export default class StartupComponent extends Vue
    */
   private hasFileUnzip(path:string)
   {
-    this.downinfo.curunzipfiles.push(path);
+    this.downinfo.curunzipfiles.push('解压完成:' + path);
     this.$nextTick().then( (vue:any)=>
     {
       let ele:any = document.getElementById('unzipfilelist');
