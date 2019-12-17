@@ -15,8 +15,8 @@
       </div>
       <div class="statusbar">
           <template v-if="!bUnzipComplated">
-            <p v-if="downinfo.bunzipping">解压中...</p>
-            <p v-else>解压完成</p>
+            <p v-if="downinfo.bunzipping">下载安装中...</p>
+            <p v-else>完成</p>
           </template>
           <template v-else>
             <p style="color:#00000000;">嘻嘻嘻</p>

@@ -1,11 +1,13 @@
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {shell} from 'electron';
+import {remote} from 'electron';
+const { app } = remote;
 import { createWriteStream, fstat, existsSync, Stats, statSync, mkdirSync } from 'fs';
 
 import request from 'request';
 import { Readable } from 'stream';
-import { dirname } from 'path';
+import { dirname,resolve } from 'path';
 
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import { GMethod } from '@/MainProcess/GApp';
@@ -14,31 +16,22 @@ import service from '@/utils/requestServices';
 import { DownloadUpdateZip } from '@/API/core';
 
 const AdmZip = require('adm-zip');
+const DownCache_Files:Array<string> = [];
+const BaseDir = process.cwd();
 
-
-const Cache_Base_Dir:string = process.cwd() + "/cache/";
-
-
-//mkdirSync(Cache_Base_Dir);
-// if (statSync(Cache_Base_Dir))
-// {
-
-// }
-
-
-const Cache_File_Name:Array<string> = [];
 for(let i = 0;i < 10;i++)
 {
-  Cache_File_Name.push(Cache_Base_Dir + `${i}.zip`);
+  DownCache_Files.push( resolve( GMethod.GetSystemStore().get('CacheDir') , `${i}.zip` ) );
 }
 
 interface IDownloadPacketInfo
 {
+  waitDownloadList:Array<[string, boolean]>,
   bunzipping:boolean;
   contentLength:number;
   downloadLength:number;
   curunzipfiles:Array<string>;
-  unzipTotal:number;
+  FileCount:number;
 };
 
 @Component({})
@@ -50,17 +43,16 @@ export default class StartupComponent extends Vue
   
   public downinfo:IDownloadPacketInfo = 
   {
-    bunzipping : false,
-    contentLength:0   ,
-    downloadLength:0  ,
-    curunzipfiles:[]  ,
-    unzipTotal:0      ,
+    waitDownloadList : [['/管理端.zip',true],['/服装DIY.MP4',false]],
+    bunzipping : false  ,
+    contentLength:0     ,
+    downloadLength:0    ,
+    curunzipfiles:[]    ,
+    FileCount:0         ,
   };
 
-  mounted():void 
+  mounted():void
   {
-    //GMethod.GetSystemStore().set('CacheDir','-------------------test');
-    console.log(GMethod.GetSystemStore().get('CacheDir'));
   }
 
   public get percentage_downprocess():number
@@ -72,7 +64,7 @@ export default class StartupComponent extends Vue
   
   public get percentage_mountprocess():number
   {
-    let ret_val = (this.downinfo.curunzipfiles.length / this.downinfo.unzipTotal) * 100;
+    let ret_val = (this.downinfo.curunzipfiles.length / this.downinfo.FileCount) * 100;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
     return ret_val;
   }
@@ -83,47 +75,76 @@ export default class StartupComponent extends Vue
     {
       return true;
     }
+
     return false;
   }
 
-  /**渲染进程处理 */
-  private biz_unzip():void
-  {
-    this.downinfo.curunzipfiles = [];
+  private handlewaitdownloadlist()
+  {  
+    this.downinfo.FileCount = this.downinfo.waitDownloadList.length;
+    this.downinfo.waitDownloadList.forEach((item:[string,boolean], index:number) => {
+      if (item[1] == true)
+      {
+        this.biz_unzip(item[0]);
+      }
+      else 
+      {
+        DownloadUpdateZip(item[0]).on('response', ( res:Response ) =>
+        {
+          let len:number = parseInt((res.headers as any )['content-length']);
+          this.downinfo.contentLength += len;
+        })
+        .on('data', (data:Buffer) =>
+        {
+          this.downinfo.downloadLength += data.length;
+        })
+        .on('complete', () =>
+        {
+          this.downinfo.curunzipfiles.push(resolve( BaseDir, '/temp/', item[0] ));
+        })
+        .pipe( createWriteStream( resolve( BaseDir, '/temp/', item[0] ) ));
+      }
+    });
+  }
 
-    //request.get('http://192.168.1.131:16677/%E7%AE%A1%E7%90%86%E7%AB%AF.zip')
-    DownloadUpdateZip()//
-    //service.get('DownloadUpdateZip')
-    .on('response', ( res:Response ) =>
-    {
+  /**渲染进程处理 */
+  private biz_unzip(path:string):void
+  {
+    //this.downinfo.curunzipfiles = [];
+
+    DownloadUpdateZip(path).on('response', ( res:Response ) =>
+    { 
       let len:number = parseInt((res.headers as any )['content-length']);
       this.downinfo.contentLength += len;
     })
-    .on('data',(data:Buffer) =>
+    .on('data', (data:Buffer) =>
     {
       this.downinfo.downloadLength += data.length;
+      console.log('tttt   ', this.downinfo.downloadLength);
     })
-    .on('complete', ()=>
+    .on('complete', () =>
     {
-      const zipPath = Cache_File_Name[0];
+      const zipPath = DownCache_Files[0];
+      this.downinfo.curunzipfiles.push(zipPath);
       if( existsSync(zipPath)    && 
-          statSync(zipPath).size >  0)
+          statSync(zipPath).size >  0 )
       {
-        const UnzipDir:string =  process.cwd() + "/temp/";
-
+        const UnzipDir:string = resolve(BaseDir, "/temp/");
         let zip = new AdmZip(zipPath);
         let zipEntries = zip.getEntries(); 
         let len = zipEntries.length;
+        this.downinfo.FileCount += len;
 
-        this.downinfo.unzipTotal += len;
-
-        zipEntries.forEach((zipEntry:any,index:number) => 
+        zipEntries.forEach( (zipEntry:any,index:number) => 
         {
+          
           if ( zipEntry == null ) 
           {
             return;
           }
-          const entryPath = UnzipDir + '/t/' + zipEntry.entryName;
+
+          const entryPath = resolve(UnzipDir, '/t/',  zipEntry.entryName);
+          
           if ( zipEntry.isDirectory )
           {
             this.hasFileUnzip( entryPath );
@@ -131,7 +152,7 @@ export default class StartupComponent extends Vue
           }
     
           let path = dirname( entryPath );
-          //unzip entry....
+          // unzip entry......
           zip.extractEntryToAsync(zipEntry, path , true, true, (err:any) =>
           {
             if ( err != undefined )
@@ -140,10 +161,12 @@ export default class StartupComponent extends Vue
             }
             this.hasFileUnzip( entryPath );
           });
-
         });
-        //this.downinfo.bunzipping = false;
       }
+    })
+    .on('error', (err:any) =>
+    {
+      console.log(err);
     })
     .on('error', (err:any) =>
     {
@@ -151,8 +174,9 @@ export default class StartupComponent extends Vue
     })
     .on('pipe', (req:any) =>
     {
+
     })
-    .pipe(createWriteStream(Cache_File_Name[0]));
+    .pipe( createWriteStream( DownCache_Files[0] ) );
   }
 
   /**
@@ -161,7 +185,7 @@ export default class StartupComponent extends Vue
   private hasFileUnzip(path:string)
   {
     this.downinfo.curunzipfiles.push(path);
-    this.$nextTick().then((vue:any)=>
+    this.$nextTick().then( (vue:any)=>
     {
       let ele:any = document.getElementById('unzipfilelist');
       ele.scrollTop = ele.scrollHeight;
@@ -173,12 +197,14 @@ export default class StartupComponent extends Vue
    */
   public onclick_test = _.throttle( ()=>
   {
-    this.downinfo.bunzipping =  true;
+    
+    this.downinfo.bunzipping = true;
     this.downinfo.contentLength  = 0;
     this.downinfo.downloadLength = 0;
-    this.downinfo.unzipTotal = 0;
+    this.downinfo.FileCount = 0;
     this.downinfo.curunzipfiles  = [];
-    this.biz_unzip();
+    this.handlewaitdownloadlist();
+
   }, 500);
 
   /**
@@ -186,8 +212,7 @@ export default class StartupComponent extends Vue
    */
   public onclick_startup =_.throttle( ()=>
   {
-    ipcRenderer.send('emp_ontray',true);
+    ipcRenderer.send( 'emp_ontray', true);
     shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
-
-  },500);
-}
+  }, 500);
+} 

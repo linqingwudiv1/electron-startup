@@ -20,7 +20,7 @@ export class GWin
 }
 
 type SystemStore = {
-  CacheDir: string
+  CacheDir: string;
 }
 
 /**
@@ -38,7 +38,6 @@ export class GMethod
      * 系统配置对象 
      */
     private static sysStore?:Store<SystemStore> = undefined;
-
     /**
      * 系统配置
      */
@@ -132,8 +131,9 @@ export class GMethod
           GWin.MainWindow.loadURL('app://./index.html');
         }
       
-        GWin.MainWindow.on('closed', () => {
-          GWin.MainWindow = null
+        GWin.MainWindow.on('closed', () => 
+        {
+          GWin.MainWindow = null;
         });
         GWin.MainWindow.on('minimize', ( ev:any ) =>
         {
@@ -158,14 +158,14 @@ export class GMethod
 
       const contextMenu = Menu.buildFromTemplate([
         { 
-          label: '   显示   ', 
+          label: '显示 ', 
           click:()=>
           {
             GMethod.SetTrayState(false);
           } 
         },
         { 
-          label: '   退出   ',  
+          label: ' 退出 ',  
           click:()=>
           {
             app.quit();
@@ -178,7 +178,6 @@ export class GMethod
         } );
       GWin.TrayIcon.setToolTip('更新启动器');
       GWin.TrayIcon.setContextMenu(contextMenu);
-
     }
 }
 

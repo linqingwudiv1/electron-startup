@@ -1,13 +1,14 @@
 import service from '@/utils/requestServices';
 
-export function GetVersion()
+export function GetWaitDownloadList(version:string )
 {
     return service.get('');
 };
 
-export function DownloadUpdateZip()
+export function DownloadUpdateZip(path:string)
 {
-    return service.get('%E7%AE%A1%E7%90%86%E7%AB%AF.zip',
+    //console.log(encodeURI(path));
+    return service.get(encodeURI(path),
     {
         json: false
     });
