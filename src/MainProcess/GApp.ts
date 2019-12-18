@@ -15,7 +15,9 @@ import { Init_MainWindowBus } from './Window/MainWindowBus';
  */
 export class GWin
 {
+    /** 主渲染Window */
     public static MainWindow:BrowserWindow|null = null;
+    /** 系统托盘 */
     public static TrayIcon:Tray|null = null;
 }
 
@@ -24,7 +26,7 @@ type SystemStore = {
 }
 
 /**
- * 
+ * 全局方法
  */
 export class GMethod
 {

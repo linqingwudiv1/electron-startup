@@ -1,0 +1,8 @@
+{
+    "mode": "file",
+    "out": "tsdoc",
+    "categorizeByGroup": false,
+    "excludeExternals":
+    [
+    ]
+}

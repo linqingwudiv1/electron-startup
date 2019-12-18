@@ -27,3 +27,4 @@ yarn-error.log*
 /dist_electron
 /temp
 /cache
+/tsdoc
