@@ -1,21 +1,22 @@
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {shell} from 'electron';
-import {remote} from 'electron';
-const { app } = remote;
-import { createWriteStream, fstat, existsSync, Stats, statSync, mkdirSync } from 'fs';
 
-import request from 'request';
-import { Readable } from 'stream';
+import { createWriteStream, existsSync, statSync } from 'fs';
+
 import { dirname,resolve } from 'path';
 
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import { GMethod } from '@/MainProcess/GApp';
 import _ from 'lodash';
-import service from '@/utils/requestServices';
 import { DownloadUpdateZip } from '@/API/core';
+import AdmZip from 'adm-zip';
 
-const AdmZip = require('adm-zip');
+/**
+ * custom component
+ */
+import QingProgress from '@/components/progress/index.vue'
+
 const DownCache_Files:Array<string> = [];
 const BaseDir = process.cwd();
 
@@ -26,6 +27,9 @@ for(let i = 0;i < 10;i++)
 
 interface IDownloadPacketInfo
 {
+  /**
+   * 路径和是否需要解压
+   */
   waitDownloadList:Array<[string, boolean]>,
   bunzipping:boolean;
   contentLength:number;
@@ -34,16 +38,22 @@ interface IDownloadPacketInfo
   FileCount:number;
 };
 
-@Component({})
+@Component(
+  {
+    components:{
+      'qing-progress' : QingProgress
+    }
+  })
 export default class StartupComponent extends Vue 
 {
   public AppInfo:any = {
-    version: '0.0.1'
+    version: '0.1.0'
   };
   
   public downinfo:IDownloadPacketInfo = 
   {
-    waitDownloadList : [['/管理端.zip',true],['/服装DIY.MP4',false]],
+    waitDownloadList : [ ['/管理端.zip',true],
+                         ['/服装DIY.MP4',false] ] ,
     bunzipping : false  ,
     contentLength:0     ,
     downloadLength:0    ,
@@ -54,11 +64,10 @@ export default class StartupComponent extends Vue
   mounted():void
   {
   }
-
   public get percentage_downprocess():number
   {
     let ret_val = ( this.downinfo.downloadLength / this.downinfo.contentLength ) * 100 ;
-    ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
+    ret_val = isNaN(ret_val) ? 0 : parseFloat(ret_val.toFixed(2));
     return ret_val;
   }
   
@@ -82,7 +91,8 @@ export default class StartupComponent extends Vue
   private handlewaitdownloadlist()
   {  
     this.downinfo.FileCount = this.downinfo.waitDownloadList.length;
-    this.downinfo.waitDownloadList.forEach((item:[string,boolean], index:number) => {
+    this.downinfo.waitDownloadList.forEach((item:[string,boolean], index:number) => 
+    {
       if (item[1] == true)
       {
         this.biz_unzip(item[0]);
@@ -100,9 +110,9 @@ export default class StartupComponent extends Vue
         })
         .on('complete', () =>
         {
-          this.downinfo.curunzipfiles.push( '下载完成:' + resolve( BaseDir, '/temp/', item[0] ));
+          this.downinfo.curunzipfiles.push( '下载完成:' + resolve( BaseDir, '/temp/', item[0] ) );
         })
-        .pipe( createWriteStream( resolve( BaseDir, '/temp/', item[0] ) ));
+        .pipe( createWriteStream( resolve( BaseDir, '/temp/', item[0] ) ) );
       }
     });
   }
@@ -120,7 +130,6 @@ export default class StartupComponent extends Vue
     .on('data', (data:Buffer) =>
     {
       this.downinfo.downloadLength += data.length;
-      console.log('tttt   ', this.downinfo.downloadLength);
     })
     .on('complete', () =>
     {
@@ -193,26 +202,25 @@ export default class StartupComponent extends Vue
   }
 
   /**
-   * 
+   * 启动应用节流
    */
   public onclick_test = _.throttle( ()=>
   {
-    
     this.downinfo.bunzipping = true;
     this.downinfo.contentLength  = 0;
     this.downinfo.downloadLength = 0;
     this.downinfo.FileCount = 0;
     this.downinfo.curunzipfiles  = [];
     this.handlewaitdownloadlist();
-
   }, 500);
 
   /**
-   * 启动应用防抖
+   * 启动应用节流
    */
   public onclick_startup =_.throttle( ()=>
   {
     ipcRenderer.send( 'emp_ontray', true);
     shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
   }, 500);
+
 } 

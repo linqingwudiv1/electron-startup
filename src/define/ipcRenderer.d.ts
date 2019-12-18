@@ -1,4 +1,3 @@
-
 declare namespace Electron
 {
    interface IpcRenderer

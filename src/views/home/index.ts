@@ -1,5 +1,5 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import Startup from '@/components/Startup.vue'
+import Startup from '@/components/Startup/index.vue'
 @Component(
   {
     components:

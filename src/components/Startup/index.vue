@@ -27,22 +27,22 @@
           <div class="flex-progress">
             <div class="flex-progress-item">
               <span><strong>下载进度:</strong></span>
-              <el-progress v-bind:text-inside="true" v-bind:stroke-width="30" v-bind:percentage="percentage_downprocess"></el-progress>
+              <qing-progress v-bind:percentage="percentage_downprocess"></qing-progress>
             </div>
             <div class="flex-progress-item">
               <span><strong>安装进度:</strong></span>
-              <el-progress v-bind:text-inside="true" v-bind:stroke-width="30" v-bind:percentage="percentage_mountprocess"></el-progress>
+              <qing-progress v-bind:percentage="percentage_mountprocess"></qing-progress>
             </div>
           </div>
         </div>
         <el-button class="ele-item" size="medium" type="info" v-on:click="onclick_test">系统设置</el-button>
         <el-button class="ele-item" size="medium" type="primary" v-on:click="onclick_startup">启动应用</el-button>
+
       </div>
   </div>
 </template>
 
-<script lang="ts" src="./Startup.ts"></script>
-
+<script lang="ts" src="./index.ts"></script>
 <style scoped lang="stylus">
 .main-com
   //padding 8px;
