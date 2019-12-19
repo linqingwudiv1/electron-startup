@@ -8,7 +8,6 @@ import
     installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib';
 import { join } from 'path';
-
 import { Init_MainWindowBus } from './Window/MainWindowBus';
 /**
  *  全局Window
@@ -33,16 +32,13 @@ export class GMethod
     public static createWindow ():void 
     {
         GMethod.createMainWindow();
-        //GMethod.createTrayIcon();
     }
 
-    /**
-     * 系统配置对象 
-     */
+    
+    //系统配置对象 
     private static sysStore?:Store<SystemStore> = undefined;
-    /**
-     * 系统配置
-     */
+    
+    //系统配置
     public static GetSystemStore():Store<SystemStore>
     {
       if (GMethod.sysStore == undefined)

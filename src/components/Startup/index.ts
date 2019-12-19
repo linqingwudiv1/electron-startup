@@ -52,8 +52,8 @@ export default class StartupComponent extends Vue
   
   public downinfo:IDownloadPacketInfo = 
   {
-    waitDownloadList : [ ['/管理端.zip',true],
-                         ['/服装DIY.MP4',false] ] ,
+    waitDownloadList : [ ['/管理端.zip',  true  ],
+                         ['/服装DIY.MP4', false ] ] ,
     bunzipping : false  ,
     contentLength:0     ,
     downloadLength:0    ,
@@ -63,11 +63,20 @@ export default class StartupComponent extends Vue
 
   mounted():void
   {
+
   }
+
+  public getversion():string
+  {
+    return '0.1.0';
+  }
+
   public get percentage_downprocess():number
   {
+    console.log(this.downinfo);
     let ret_val = ( this.downinfo.downloadLength / this.downinfo.contentLength ) * 100 ;
-    ret_val = isNaN(ret_val) ? 0 : parseFloat(ret_val.toFixed(2));
+    ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
+    
     return ret_val;
   }
   
@@ -206,12 +215,12 @@ export default class StartupComponent extends Vue
    */
   public onclick_test = _.throttle( ()=>
   {
-    this.downinfo.bunzipping = true;
-    this.downinfo.contentLength  = 0;
-    this.downinfo.downloadLength = 0;
-    this.downinfo.FileCount = 0;
-    this.downinfo.curunzipfiles  = [];
-    this.handlewaitdownloadlist();
+    this.downinfo.bunzipping = true   ;
+    this.downinfo.contentLength  = 0  ;
+    this.downinfo.downloadLength = 0  ;
+    this.downinfo.FileCount = 0       ;
+    this.downinfo.curunzipfiles  = [] ;
+    this.handlewaitdownloadlist()     ;
   }, 500);
 
   /**
