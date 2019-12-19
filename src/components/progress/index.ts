@@ -7,6 +7,5 @@ export default class BJProgressComponent extends Vue
     public percentage!: number;
 
     mounted() {
-        
     }
 }
