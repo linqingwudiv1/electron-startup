@@ -1,8 +1,12 @@
 'use strict'
 
 import { app, protocol, Tray, Menu } from 'electron';
-import { GWin, GMethod } from './MainProcess/GApp';
+
+
 import { join } from 'path';
+import GMPMethod from '@/Global/MainProcess/GMPMethod';
+import GWin from '@/Global/MainProcess/GWin';
+//import GApp from './Global/MainProcess/GApp';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true, standard: true } }]);
@@ -24,8 +28,7 @@ app.on('activate', () =>
 
   if (GWin.MainWindow === null) 
   {
-    console.log(GMethod);
-    GMethod.createWindow();
+    GMPMethod.createWindow();
   }
 })
 
@@ -50,7 +53,7 @@ app.on('ready', async () =>
     // }
     */
   }
-  GMethod.createWindow();
+  GMPMethod.createWindow();
 })
 
 // Exit cleanly on request from parent process in development mode.

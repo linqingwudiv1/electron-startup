@@ -1,12 +1,11 @@
 
 import { ipcMain, IpcMainEvent  } from "electron";
-import {GWin} from '@/MainProcess/GApp';
+
 import { dirname } from 'path';
+import GWin from '@/Global/MainProcess/GWin';
 const AdmZip = require('adm-zip') ;
 
-
 const UnzipDir:string  = "d:/temp/";
-
 
 function Init_Decompress()
 {

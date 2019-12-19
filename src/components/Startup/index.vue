@@ -27,7 +27,7 @@
           <div class="flex-progress">
             <div class="flex-progress-item">
               <span><strong>下载进度:</strong></span>
-              <qing-progress v-bind:percentage="percentage_mountprocess"></qing-progress>
+              <qing-progress v-bind:percentage="percentage_downprocess"></qing-progress>
             </div>
             <div class="flex-progress-item">
               <span><strong>安装进度:</strong></span>

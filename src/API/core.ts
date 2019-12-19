@@ -7,7 +7,6 @@ export function GetWaitDownloadList(version:string )
 
 export function DownloadUpdateZip(path:string)
 {
-    //console.log(encodeURI(path));
     return service.get(encodeURI(path),
     {
         json: false
