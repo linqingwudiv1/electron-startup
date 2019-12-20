@@ -11,10 +11,13 @@ import { DownloadUpdateZip, GetWaitDownloadList } from '@/API/core';
 import {TweenMax,TweenLite, random} from 'gsap';
 import AdmZip from 'adm-zip';
 
+
 /**
  * custom component
  */
-import QingProgress from '@/components/progress/index.vue'
+import QingProgress from '@/components/progress/index.vue';
+import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
+import { RequestProgressState } from 'request-progress';
 
 const DownCache_Files:Array<string> = [];
 
@@ -43,7 +46,8 @@ interface IDownloadPacketInfo
 @Component(
   {
     components:{
-      'qing-progress' : QingProgress
+      'qing-progress' : QingProgress,
+      'game-setting-dialog' :  GameSettingDialog
     }
   })
 export default class StartupComponent extends Vue 
@@ -57,7 +61,7 @@ export default class StartupComponent extends Vue
   public downinfo:IDownloadPacketInfo = 
   {
     waitDownloadList : [ ['/管理端.zip',  true  ],
-                         ['dist/public/服装DIY.MP4', false ] ] ,
+                         ['/public/服装DIY.MP4', false ] ] ,
     bunzipping : false  ,
     contentLength:0     ,
     downloadLength:0    ,
@@ -80,9 +84,9 @@ export default class StartupComponent extends Vue
     return this.downinfo.waitDownloadList.length == 0;
   }
 
+  /** 是否可更新 */
   public get bUpdate():boolean 
   {
-    console.log(this.downinfo.waitDownloadList.length );
     return this.downinfo.waitDownloadList.length > 0;
   }
 
@@ -151,21 +155,30 @@ export default class StartupComponent extends Vue
     {
       let stdout = mkdir('-p', fulldir).stdout;
     }
-    DownloadUpdateZip(path).on('response', ( res:Response ) =>
+    DownloadUpdateZip(path)
+    // .on('response', ( res:Response ) =>
+    // {
+    //   let len:number = parseInt((res.headers as any )['content-length']);
+    //   this.downinfo.contentLength += len;
+    // })
+    .on('progress', (state:any)=>
     {
-      let len:number = parseInt((res.headers as any )['content-length']);
-      this.downinfo.contentLength += len;
+      console.log('#############################',state);
     })
-    .on('data', (data:Buffer) =>
-    {
-      this.downinfo.downloadLength += data.length;
+    .on('end', function () {
+      console.log('#############################','   end');
+      // Do something after request finishes
     })
-    .on('complete', () =>
-    {
-      this.downinfo.waitDownloadList.splice( this.downinfo.waitDownloadList.indexOf(item), 1);
-      this.downinfo.curunzipfiles.push( '下载完成:' + fullpath );
+    // .on('data', (data:Buffer) =>
+    // {
+    //   this.downinfo.downloadLength += data.length;
+    // })
+    // .on('complete', () =>
+    // {
+    //   this.downinfo.waitDownloadList.splice( this.downinfo.waitDownloadList.indexOf(item), 1);
+    //   this.downinfo.curunzipfiles.push( '下载完成:' + fullpath );
 
-    })
+    // })
     .pipe( createWriteStream(fullpath) );
   }
 
