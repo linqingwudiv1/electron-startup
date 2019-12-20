@@ -47,7 +47,7 @@
                         } catch (err) {
                             callback(new Error('Unable to set utimes'));
                         }
-                        if (i <= 0) return;
+                        if ( i <= 0 ) return;
                         if (!succ) {
                             i = 0;
                             callback(new Error('Unable to write'));

@@ -37,6 +37,7 @@ export default class GApp
       }
       return GApp.sysStore;   
     }
+    
     /** UE4版本号 */
     public static UEVersion:string =  readFileSync('UE/version.json', { encoding: 'utf-8' });
 }

@@ -21,7 +21,6 @@ import Store from 'electron-store';
        */
       public static SetTrayState(isTray:boolean):boolean
       {
-  
         if (isTray)
         {
           //进入托盘状态
@@ -64,7 +63,7 @@ import Store from 'electron-store';
           { 
             width: 800, 
             height: 600, 
-            backgroundColor: '#fffff00',
+            backgroundColor: '#fffffff',
             webPreferences: {
               nodeIntegration: true,
               webSecurity: false, // CORS
@@ -126,13 +125,13 @@ import Store from 'electron-store';
           },
           { 
             label: ' 退出 ',  
-            click:()=>
+            click:() =>
             {
               app.quit();
             }
           }
         ]);
-          GWin.TrayIcon.on('double-click',()=>
+          GWin.TrayIcon.on('double-click',() =>
           {
             GMPMethod.SetTrayState(false);
           } );

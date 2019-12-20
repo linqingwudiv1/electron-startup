@@ -18,10 +18,10 @@ function Init_Decompress()
     if (len > 0)
     {
       ev.reply('erp_unzip_onstart',  zipEntries.length);
-    } 
+    }
 
     let arr_error:Array<[string, string]> = [];
-    
+
     zipEntries.forEach((zipEntry:any,index:number) => 
     {
       if ( GWin.MainWindow == null || 
@@ -37,12 +37,13 @@ function Init_Decompress()
       }
 
       let path = dirname( UnzipDir + '/t/' + zipEntry.entryName );
+
       //unzip entry....
       zip.extractEntryToAsync(zipEntry, path , true, true, (err:any) =>
       {
         if ( err != undefined )
         {
-          console.log(err);
+          console.log( err );
         }
         ev.reply('erp_unzip_onprocess', path, true, index, len);
       });

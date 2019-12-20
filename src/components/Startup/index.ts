@@ -6,8 +6,9 @@ import { dirname,resolve,join } from 'path';
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import GMPMethod from '@/Global/MainProcess/GMPMethod';
 import GApp from '@/Global/MainProcess/GApp';
-import _ from 'lodash';
+import _, { delay } from 'lodash';
 import { DownloadUpdateZip, GetWaitDownloadList } from '@/API/core';
+import {TweenMax,TweenLite, random} from 'gsap';
 import AdmZip from 'adm-zip';
 
 /**
@@ -17,12 +18,15 @@ import QingProgress from '@/components/progress/index.vue'
 
 const DownCache_Files:Array<string> = [];
 
-for(let i = 0;i < 10;i++)
+for(let i = 0;i < 10; i++)
 {
   DownCache_Files.push( resolve( GApp.SystemStore.get('CacheDir') , `${i}.zip` ) );
 }
 
 
+/**
+ * 
+ */
 interface IDownloadPacketInfo
 {
   /**
@@ -44,10 +48,12 @@ interface IDownloadPacketInfo
   })
 export default class StartupComponent extends Vue 
 {
+  /** */
   public AppInfo:any = {
     version: '0.1.0'
   };
-  
+
+  /** */
   public downinfo:IDownloadPacketInfo = 
   {
     waitDownloadList : [ ['/管理端.zip',  true  ],
@@ -59,15 +65,28 @@ export default class StartupComponent extends Vue
     FileCount:0         ,
   };
 
+  /** */
   mounted():void
   {
-    // GetWaitDownloadList(GApp.UEVersion).then(()=>
-    // {
-
-    // });
+    GetWaitDownloadList(GApp.UEVersion).then( (res:any)=>
+    {
+      console.log(``);
+    });
   }
 
+  /** 是否可启动 */
+  public get bStartup():boolean
+  {
+    return this.downinfo.waitDownloadList.length == 0;
+  }
 
+  public get bUpdate():boolean 
+  {
+    console.log(this.downinfo.waitDownloadList.length );
+    return this.downinfo.waitDownloadList.length > 0;
+  }
+
+  /** */
   public get percentage_downprocess():number
   {
     let ret_val = ( this.downinfo.downloadLength / this.downinfo.contentLength ) * 100 ;
@@ -76,6 +95,7 @@ export default class StartupComponent extends Vue
     return ret_val;
   }
   
+  /** */
   public get percentage_mountprocess():number
   {
     let ret_val = (this.downinfo.curunzipfiles.length / this.downinfo.FileCount) * 100;
@@ -83,6 +103,7 @@ export default class StartupComponent extends Vue
     return ret_val;
   }
 
+  /** */
   public get bUnzipComplated():boolean
   {
     if ( 100 === this.percentage_mountprocess )
@@ -91,11 +112,12 @@ export default class StartupComponent extends Vue
     }
 
     return false;
-  }
+  } 
 
+  /** */
   private handlewaitdownloadlist()
   {  
-    //路径不存在则创建路径
+    // 路径不存在则创建路径
     if (!existsSync( GApp.SystemStore.get('CacheDir') ) )
     {
       let stdout = mkdir('-p', resolve( GApp.SystemStore.get('CacheDir') )).stdout;
@@ -106,21 +128,22 @@ export default class StartupComponent extends Vue
     {
       if (item[1] == true)
       {
-        this.biz_zipdownload(item[0]);
+        this.biz_zipdownload(item);
       }
       else 
       {
-        this.biz_filedoanload(item[0]);
+        this.biz_filedownload(item);
       }
     });
   }
 
   /**
    * 下载文件
-   * @param path ftp路径和安装相对路径
+   * @param item ftp路径和安装相对路径
    */
-  private biz_filedoanload(path:string):void
+  private biz_filedownload(item:[string,boolean]):void
   {
+    let path = item[0];
     let fullpath = resolve(GApp.MounteDir, path);
     let fulldir = dirname(fullpath);
     
@@ -139,19 +162,20 @@ export default class StartupComponent extends Vue
     })
     .on('complete', () =>
     {
+      this.downinfo.waitDownloadList.splice( this.downinfo.waitDownloadList.indexOf(item), 1);
       this.downinfo.curunzipfiles.push( '下载完成:' + fullpath );
+
     })
     .pipe( createWriteStream(fullpath) );
   }
 
   /**
    * 下载压缩包，并解压安装
-   * @param path 下载路径
+   * @param item 下载路径
    */
-  private biz_zipdownload(path:string):void
+  private biz_zipdownload(item:[string,boolean]):void
   {
-    //this.downinfo.curunzipfiles = [];
-
+    let path = item[0];
     DownloadUpdateZip(path).on('response', ( res:Response ) =>
     { 
       let len:number = parseInt((res.headers as any )['content-length']);
@@ -163,8 +187,11 @@ export default class StartupComponent extends Vue
     })
     .on('complete', () =>
     {
+      this.downinfo.waitDownloadList.splice(this.downinfo.waitDownloadList.indexOf(item),1);
       const zipPath = DownCache_Files[0];
+      
       this.downinfo.curunzipfiles.push('下载完成:' + zipPath);
+
       if( existsSync(zipPath)    && 
           statSync(zipPath).size >  0 )
       {
@@ -173,32 +200,37 @@ export default class StartupComponent extends Vue
         let len = zipEntries.length;
         this.downinfo.FileCount += len;
 
-        zipEntries.forEach( (zipEntry:any,index:number) => 
+        zipEntries.forEach( ( zipEntry:any, index:number ) => 
         {
           
-          if ( zipEntry == null ) 
+          delay(()=>
           {
-            return;
-          }
-
-          const entryPath = join( GApp.MounteDir,  zipEntry.entryName);
-
-          if ( zipEntry.isDirectory )
-          {
-            this.hasFileUnzip( entryPath );
-            return;
-          }
-    
-          let path = dirname( entryPath );
-          // unzip entry......
-          zip.extractEntryToAsync(zipEntry, path , true, true, (err:any) =>
-          {
-            if ( err != undefined )
+            if ( zipEntry == null ) 
             {
-              console.log(err);
+              return;
             }
-            this.hasFileUnzip( entryPath );
-          });
+  
+            const entryPath = join( GApp.MounteDir,  zipEntry.entryName);
+  
+            if ( zipEntry.isDirectory )
+            {
+              this.hasFileUnzip( entryPath );
+              return;
+            }
+      
+            let path = dirname( entryPath );
+            // unzip entry......
+            zip.extractEntryToAsync(zipEntry, path , true, true, (err:any) =>
+            {
+              if ( err != undefined )
+              {
+                console.log(err);
+              }
+              this.hasFileUnzip( entryPath );
+            });
+            
+          }, index * 50);
+
         });
       }
     })
@@ -221,6 +253,8 @@ export default class StartupComponent extends Vue
    */
   private hasFileUnzip(path:string)
   {
+    let delay_time = Math.random() * 100 + 50;
+
     this.downinfo.curunzipfiles.push('解压完成:' + path);
     this.$nextTick().then( (vue:any)=>
     {
@@ -230,9 +264,9 @@ export default class StartupComponent extends Vue
   }
 
   /**
-   * 启动应用节流
+   * 更新应用, 启动应用节流
    */
-  public onclick_test = _.throttle( ()=>
+  public onclick_update = _.throttle( ()=>
   {
     this.downinfo.bunzipping = true   ;
     this.downinfo.contentLength  = 0  ;
@@ -247,8 +281,17 @@ export default class StartupComponent extends Vue
    */
   public onclick_startup =_.throttle( ()=>
   {
-    ipcRenderer.send( 'emp_ontray', true);
-    shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
+    if(this.bStartup)
+    {
+      ipcRenderer.send( 'emp_ontray', true);
+      shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
+    }
+    else 
+    {
+      this.$alert(`正在更新应用..请等待`, {
+        confirmButtonText: '确定',
+        callback: (action:any) => {}
+      });
+    }
   }, 500);
-
 } 

@@ -6,7 +6,7 @@
         <el-divider></el-divider>
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
-            <p class="item" v-for="(item,index) in downinfo.curunzipfiles" v-bind:key="index">
+            <p class="item animated slideInLeft supfast"  v-for="(item,index) in downinfo.curunzipfiles" v-bind:key="index">
               <strong></strong>
               {{item}}
             </p>
@@ -19,24 +19,33 @@
             <p v-else>完成</p>
           </template>
           <template v-else>
-            <p style="color:#00000000;">嘻嘻嘻</p>
+            <p style="color:#00000000;">&nbsp;&nbsp;&nbsp;</p>
           </template>
       </div>
       <div class="footer">
         <div class="ele-item" style="width:100%;">
-          <div class="flex-progress">
-            <div class="flex-progress-item">
-              <span><strong>下载进度:</strong></span>
-              <qing-progress v-bind:percentage="percentage_downprocess"></qing-progress>
-            </div>
-            <div class="flex-progress-item">
-              <span><strong>安装进度:</strong></span>
-              <qing-progress v-bind:percentage="percentage_mountprocess"></qing-progress>
-            </div>
+          <div class="flex-progress animated zoomIn supfast">
+            <template>
+              <div class="flex-progress-item">
+                <span><strong>下载进度:</strong></span>
+                <qing-progress v-bind:percentage="percentage_downprocess"></qing-progress>
+              </div>
+              <div class="flex-progress-item">
+                <span><strong>安装进度:</strong></span>
+                <qing-progress v-bind:percentage="percentage_mountprocess"></qing-progress>
+              </div>
+            </template>
           </div>
         </div>
-        <el-button class="ele-item" size="medium" type="info" v-on:click="onclick_test">系统设置</el-button>
-        <el-button class="ele-item" size="medium" type="primary" v-on:click="onclick_startup">启动应用</el-button>
+
+        <el-button class="ele-item animated zoomIn supfast" size="medium" type="info" v-on:click="onclick_update">系统设置</el-button>
+
+        <template v-if="bUpdate">
+          <el-button  class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_update">更新应用</el-button>
+        </template>
+        <template v-else>
+          <el-button class="ele-item animated zoomIn supfast" size="medium" type="success" v-bind:disabled="!bStartup" v-on:click="onclick_startup">启动应用</el-button>
+        </template>
 
       </div>
   </div>
@@ -45,30 +54,34 @@
 <script lang="ts" src="./index.ts"></script>
 <style scoped lang="stylus">
 .main-com
+  .supfast
+    animation-duration :0.4s;
   //padding 8px;
   user-select none;
-  width :100vw;
+  width : 100vw;
   height: 100vh;
   display :flex;
   flex-direction: column;
   .content
-    display :flex;
-    flex-direction:column;
-    width :100%;
-    text-align :center;
-    background :lightgrey;
-    flex :1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    background: lightgrey;
+    flex: 1 0 auto;
     .unzipfilelistcontainer
-      flex :1 0 auto;
-      width:100%;
+      flex:  1 0 auto;
+      width: 100%;
       #unzipfilelist
-        text-align :left;
-        min-height:100%;
+        text-align: left;
+        min-height: 100%;
         height:0px;
-        background:grey;
         overflow-y: auto;
         overflow-x:hidden;
+        .item
+          animation-delay: 0ms;
         p
+          font-size 13px;
           user-select: all;
           margin: 0;
           padding 5px;
@@ -81,7 +94,7 @@
   .statusbar
     p
       background: lightgrey;
-      margin 0;
+      margin: 0;
       padding :5px;
       text-align :right;
   .footer
@@ -97,7 +110,7 @@
       margin : 10px 5px 10px 5px;
       .flex-progress
         //border: 1px solid darkgray;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04)
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04)
         border-radius:5px;
         padding: 5px;
         display: flex;
@@ -107,7 +120,6 @@
         justify-content :space-between; 
         align-items :stretch;
         .flex-progress-item
-          //background:green;
           background:lightgrey;
           display :flex;
           flex-direction:row;
