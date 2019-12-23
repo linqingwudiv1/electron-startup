@@ -7,7 +7,7 @@
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
             <p class="item animated slideInLeft supfast" v-bind:class="{ 'erroritem':item[1] == false }" 
-                                                         v-for="(item,index) in downinfo.curunzipfiles" 
+                                                         v-for="(item,index) in downinfo.handlefiles" 
                                                          v-bind:key="index">
               {{item[0]}}
             </p>

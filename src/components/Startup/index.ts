@@ -281,8 +281,7 @@ export default class StartupComponent extends Vue
     .on('error', (err:any) =>
     {
       item.state = EM_DownloadItemState.Error;
-      
-    this.downinfo.handlefiles.push(['解压失败:' + path, false]);
+      this.downinfo.handlefiles.push(['解压失败:' + path, false]);
       console.error(err);
     })
     .pipe(createWriteStream (DownCache_Files[0]) );
