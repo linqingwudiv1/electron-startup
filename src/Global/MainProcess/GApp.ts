@@ -19,7 +19,7 @@ export default class GApp
     /** App Root Path */
     public static readonly RootDir:string = process.cwd() ;
     /** App Update Fit Path */
-    public static readonly MounteDir:string = join( GApp.RootDir ,'/UE/');
+    public static readonly MountedDir:string = join( GApp.RootDir ,'/UE/');
 
     /** 系统持久化配置实例 */
     private static sysStore?:Store<SystemStore> = undefined;

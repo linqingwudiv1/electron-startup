@@ -16,6 +16,9 @@ declare module 'request-progress'
          */
         on(ev:string,   callback:any):this;
 
+
+        on(ev:'response', callback:(res:request.Response)=>void):this;
+
         /**
          * 
          * @param ev 

@@ -33,6 +33,7 @@
     "element-ui": "2.13.0",
     "faker": "^4.1.0",
     "gsap": "^3.0.4",
+    "linq": "^3.2.1",
     "moment": "^2.24.0",
     "promise-worker": "^2.0.1",
     "register-service-worker": "^1.6.2",

@@ -1,23 +1,25 @@
-import { Component, Prop, Vue } from 'vue-property-decorator';
+//#region import  
+import { Component, Prop, Vue } from'vue-property-decorator';
 import {shell} from 'electron';
 import {mkdir} from 'shelljs';
-import { createWriteStream, existsSync, statSync, fstat, readFileSync, readFile, mkdirSync } from 'fs';
+import { createWriteStream, existsSync,  statSync, fstat, readFileSync, readFile, mkdirSync, stat } from 'fs';
 import { dirname,resolve,join } from 'path'; 
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import GMPMethod from '@/Global/MainProcess/GMPMethod';
 import GApp from '@/Global/MainProcess/GApp';
 import _, { delay } from 'lodash';
 import { DownloadUpdateZip, GetWaitDownloadList } from '@/API/core';
-import {TweenMax,TweenLite, random} from 'gsap';
+import {TweenMax,TweenLite} from 'gsap';
 import AdmZip from 'adm-zip';
-
-
-/**
- * custom component
- */
+import { from } from 'linq';
+import request from 'request';
+//custom component
 import QingProgress from '@/components/progress/index.vue';
 import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState } from 'request-progress';
+//data 
+import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
+//#endregion
 
 const DownCache_Files:Array<string> = [];
 
@@ -25,23 +27,6 @@ for(let i = 0;i < 10; i++)
 {
   DownCache_Files.push( resolve( GApp.SystemStore.get('CacheDir') , `${i}.zip` ) );
 }
-
-
-/**
- * 
- */
-interface IDownloadPacketInfo
-{
-  /**
-   * 路径和是否需要解压
-   */
-  waitDownloadList:Array<[string, boolean]>,
-  bunzipping:boolean;
-  contentLength:number;
-  downloadLength:number;
-  curunzipfiles:Array<string>;
-  FileCount:number;
-};
 
 @Component(
   {
@@ -60,13 +45,11 @@ export default class StartupComponent extends Vue
   /** */
   public downinfo:IDownloadPacketInfo = 
   {
-    waitDownloadList : [ ['/管理端.zip',  true  ],
-                         ['/public/服装DIY.MP4', false ] ] ,
+    DownloadDirList : [ new DownloadItem('管理端.zip','/管理端.zip', EM_DownloadItemFileType.Zip),
+                        new DownloadItem('服装DIY.MP4','/public/服装DIY.MP4', EM_DownloadItemFileType.Common)] ,
     bunzipping : false  ,
-    contentLength:0     ,
-    downloadLength:0    ,
-    curunzipfiles:[]    ,
-    FileCount:0         ,
+    handlefiles:[]    ,
+    FileCount:0
   };
 
   /** */
@@ -81,28 +64,52 @@ export default class StartupComponent extends Vue
   /** 是否可启动 */
   public get bStartup():boolean
   {
-    return this.downinfo.waitDownloadList.length == 0;
+    let count = from  ( this.downinfo.handlefiles )
+                .where( x => x[1] === false)
+                .count();
+
+    return count == 0;
   }
 
   /** 是否可更新 */
   public get bUpdate():boolean 
   {
-    return this.downinfo.waitDownloadList.length > 0;
+    let count =  from  ( this.downinfo.DownloadDirList )
+                 .where( x => x.state !== EM_DownloadItemState.Completed )
+                 .count();
+
+    return count > 0;
   }
 
   /** */
   public get percentage_downprocess():number
   {
-    let ret_val = ( this.downinfo.downloadLength / this.downinfo.contentLength ) * 100 ;
+    let Total_downloadSize = from( this.downinfo.DownloadDirList )
+                             .select( x => x.contentSize  )
+                             .defaultIfEmpty(0).sum();
+
+    let Cur_downloadSize   = from( this.downinfo.DownloadDirList )
+                             .select( x => x.transferSize )
+                             .defaultIfEmpty(0).sum();
+  
+    let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
     
     return ret_val;
   }
   
+  
+  public percent_download:Array<number> = [];
+
   /** */
   public get percentage_mountprocess():number
   {
-    let ret_val = (this.downinfo.curunzipfiles.length / this.downinfo.FileCount) * 100;
+    //成功处理文件数
+    let handlefilecount = from (this.downinfo.handlefiles)
+                                .where( x=> x[1] == true )
+                                .count();
+
+    let ret_val = ( handlefilecount / this.downinfo.FileCount) * 100;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
     return ret_val;
   }
@@ -118,7 +125,9 @@ export default class StartupComponent extends Vue
     return false;
   } 
 
-  /** */
+  /**
+   * 
+   */
   private handlewaitdownloadlist()
   {  
     // 路径不存在则创建路径
@@ -127,58 +136,72 @@ export default class StartupComponent extends Vue
       let stdout = mkdir('-p', resolve( GApp.SystemStore.get('CacheDir') )).stdout;
     }
 
-    this.downinfo.FileCount = this.downinfo.waitDownloadList.length;
-    this.downinfo.waitDownloadList.forEach((item:[string,boolean], index:number) => 
+    this.downinfo.FileCount = this.downinfo.DownloadDirList.length;
+    this.downinfo.DownloadDirList.forEach((item:DownloadItem, index:number) => 
     {
-      if (item[1] == true)
+      switch (item.fileType) 
       {
-        this.biz_zipdownload(item);
-      }
-      else 
-      {
-        this.biz_filedownload(item);
+        case EM_DownloadItemFileType.Common:
+        {
+          this.biz_filedownload(item);
+          break;
+        }
+        case  EM_DownloadItemFileType.Zip:
+        {
+          this.biz_zipdownload(item);
+          break;
+        }
       }
     });
+
   }
 
   /**
    * 下载文件
    * @param item ftp路径和安装相对路径
    */
-  private biz_filedownload(item:[string,boolean]):void
+  private biz_filedownload(item:DownloadItem):void
   {
-    let path = item[0];
-    let fullpath = resolve(GApp.MounteDir, path);
+    let path = item.uri;
+    let fullpath = join(GApp.MountedDir, path);
     let fulldir = dirname(fullpath);
     
     if (!existsSync(fulldir) )
     {
       let stdout = mkdir('-p', fulldir).stdout;
+      console.log(stdout);
     }
-    DownloadUpdateZip(path)
-    // .on('response', ( res:Response ) =>
-    // {
-    //   let len:number = parseInt((res.headers as any )['content-length']);
-    //   this.downinfo.contentLength += len;
-    // })
-    .on('progress', (state:any)=>
-    {
-      console.log('#############################',state);
-    })
-    .on('end', function () {
-      console.log('#############################','   end');
-      // Do something after request finishes
-    })
-    // .on('data', (data:Buffer) =>
-    // {
-    //   this.downinfo.downloadLength += data.length;
-    // })
-    // .on('complete', () =>
-    // {
-    //   this.downinfo.waitDownloadList.splice( this.downinfo.waitDownloadList.indexOf(item), 1);
-    //   this.downinfo.curunzipfiles.push( '下载完成:' + fullpath );
 
-    // })
+    DownloadUpdateZip(path)
+    .on('response',( res:request.Response  ) =>
+    {
+      if(res.statusCode === 200)
+      {
+        let len:number = parseInt((res.headers as any )['content-length']);
+        item.state = EM_DownloadItemState.Downloading;
+        item.contentSize = len;
+      }
+      else 
+      {
+        item.state = EM_DownloadItemState.Error;
+      }
+    })
+    .on('progress', (state:RequestProgressState)=>
+    {
+      item.transferSize = state.size.transferred;
+    })
+    .on('error', (error:any)=>
+    {
+      console.log(error);
+      this.downinfo.handlefiles.push( ['下载失败:' + fullpath, false] );
+      item.state = EM_DownloadItemState.Error;
+    }) 
+    .on('end', ()=> {
+      item.transferSize = item.contentSize;
+      item.state = EM_DownloadItemState.Completed;
+
+      this.downinfo.handlefiles.push( ['下载完成:' + fullpath, true] );
+    })
     .pipe( createWriteStream(fullpath) );
   }
 
@@ -186,24 +209,33 @@ export default class StartupComponent extends Vue
    * 下载压缩包，并解压安装
    * @param item 下载路径
    */
-  private biz_zipdownload(item:[string,boolean]):void
+  private biz_zipdownload(item:DownloadItem):void
   {
-    let path = item[0];
-    DownloadUpdateZip(path).on('response', ( res:Response ) =>
+    let path = item.uri;
+    DownloadUpdateZip(path).on('response', ( res:request.Response ) =>
     { 
-      let len:number = parseInt((res.headers as any )['content-length']);
-      this.downinfo.contentLength += len;
+      if(res.statusCode === 200)
+      {
+        let len:number = parseInt((res.headers as any )['content-length']);
+        item.contentSize = len;
+        item.state = EM_DownloadItemState.Downloading;
+      }
+      else 
+      {
+        item.state = EM_DownloadItemState.Error;
+      }
     })
-    .on('data', (data:Buffer) =>
+    .on('progress', (state:RequestProgressState)=>
     {
-      this.downinfo.downloadLength += data.length;
+      item.transferSize = state.size.transferred;
     })
-    .on('complete', () =>
+    .on('end', ()=>
     {
-      this.downinfo.waitDownloadList.splice(this.downinfo.waitDownloadList.indexOf(item),1);
+      item.transferSize = item.contentSize;
+      item.state = EM_DownloadItemState.Completed;
       const zipPath = DownCache_Files[0];
       
-      this.downinfo.curunzipfiles.push('下载完成:' + zipPath);
+      this.downinfo.handlefiles.push(['下载完成:' + zipPath, true]);
 
       if( existsSync(zipPath)    && 
           statSync(zipPath).size >  0 )
@@ -215,7 +247,6 @@ export default class StartupComponent extends Vue
 
         zipEntries.forEach( ( zipEntry:any, index:number ) => 
         {
-          
           delay(()=>
           {
             if ( zipEntry == null ) 
@@ -223,7 +254,7 @@ export default class StartupComponent extends Vue
               return;
             }
   
-            const entryPath = join( GApp.MounteDir,  zipEntry.entryName);
+            const entryPath = join( GApp.MountedDir,  zipEntry.entryName);
   
             if ( zipEntry.isDirectory )
             {
@@ -242,21 +273,17 @@ export default class StartupComponent extends Vue
               this.hasFileUnzip( entryPath );
             });
             
-          }, index * 50);
+          }, index * 60);
 
         });
       }
     })
     .on('error', (err:any) =>
     {
-      console.log(err);
-    })
-    .on('error', (err:any) =>
-    {
-      console.log(err);
-    })
-    .on('pipe', (req:any) =>
-    {
+      item.state = EM_DownloadItemState.Error;
+      
+    this.downinfo.handlefiles.push(['解压失败:' + path, false]);
+      console.error(err);
     })
     .pipe(createWriteStream (DownCache_Files[0]) );
   }
@@ -266,10 +293,9 @@ export default class StartupComponent extends Vue
    */
   private hasFileUnzip(path:string)
   {
-    let delay_time = Math.random() * 100 + 50;
 
-    this.downinfo.curunzipfiles.push('解压完成:' + path);
-    this.$nextTick().then( (vue:any)=>
+    this.downinfo.handlefiles.push(['解压完成:' + path, true]);
+    this.$nextTick().then( (vue:any) =>
     {
       let ele:any = document.getElementById('unzipfilelist');
       ele.scrollTop = ele.scrollHeight;
@@ -282,10 +308,9 @@ export default class StartupComponent extends Vue
   public onclick_update = _.throttle( ()=>
   {
     this.downinfo.bunzipping = true   ;
-    this.downinfo.contentLength  = 0  ;
-    this.downinfo.downloadLength = 0  ;
+
     this.downinfo.FileCount = 0       ;
-    this.downinfo.curunzipfiles  = [] ;
+    this.downinfo.handlefiles  = [] ;
     this.handlewaitdownloadlist()     ;
   }, 500);
 
