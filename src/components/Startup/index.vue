@@ -38,7 +38,7 @@
             </template>
           </div>
         </div>
-        <el-button class="ele-item animated zoomIn supfast" size="medium" type="info" v-on:click="onclick_update">系统设置</el-button>
+        <el-button class="ele-item animated zoomIn supfast" size="medium" type="info" v-on:click="onclick_setting">系统设置</el-button>
         <template v-if="bUpdate">
           <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_update">更新应用</el-button>
         </template>
@@ -114,10 +114,10 @@
         justify-content :space-between; 
         align-items :stretch;
         .flex-progress-item
-          display :flex;
-          flex-direction:row;
-          justify-content :flex-start;
-          align-items :baseline;
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: baseline;
           .el-progress
             flex-grow: 1;
 </style>

@@ -1,12 +1,13 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import Startup from '@/components/Startup/index.vue'
+import Startup from '@/components/Startup/index.vue';
+import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 @Component(
+{
+  components:
   {
-    components:
-    {
-      startup : Startup
-    }
-  })
-export default class HomeView extends Vue{
-
+    startup : Startup,
+    gameSettingDialog: GameSettingDialog
+  }
+})
+export default class HomeView extends Vue {
 }

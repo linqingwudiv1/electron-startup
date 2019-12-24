@@ -37,12 +37,12 @@ for(let i = 0;i < 10; i++)
   })
 export default class StartupComponent extends Vue 
 {
-  /** */
+  //** *
   public AppInfo:any = {
     version: '0.1.0'
   };
 
-  /** */
+  //** *
   public downinfo:IDownloadPacketInfo = 
   {
     DownloadDirList : [ new DownloadItem('管理端.zip','/管理端.zip', EM_DownloadItemFileType.Zip),
@@ -301,6 +301,10 @@ export default class StartupComponent extends Vue
     });
   }
 
+  public onclick_setting = _.throttle( () =>
+  {
+    this.$store.commit( 'ShowGameSettingDialog', true);
+  });
   /**
    * 更新应用, 启动应用节流
    */

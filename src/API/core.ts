@@ -9,12 +9,18 @@ export function GetWaitDownloadList(version:string )
 
 export function DownloadUpdateZip(path:string)
 {
-    //console.log(progress, request('http://192.168.1.131:16677/' + path));
+    return progress( service.get( encodeURI(path), { json: false } ), 
+    {
+        json: false
+    });
+}
 
-    return progress (service.get(encodeURI(path), {json: false}), { });
-
-    //eturn progress(service.get(encodeURI(path),
-    //
-    //   json: false
-    //),{});
+export function DownloadUpdateZip1(path:string, step:number)
+{
+    return progress( service.get( encodeURI(path), { json: false } ), 
+    {
+        json: false,
+        headers: {
+        }
+    });
 }

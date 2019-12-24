@@ -1,4 +1,5 @@
 import {Vue,Prop,Component}from 'vue-property-decorator'
+import { Store } from 'vuex';
 
 
 /**
@@ -7,6 +8,29 @@ import {Vue,Prop,Component}from 'vue-property-decorator'
 @Component({})
 export default class GameSettingDialogComponent extends Vue 
 {
-    @Prop()
-    bShowGameDialog!:boolean;
+    mounted() {
+    };
+    public form:any = {
+        name:   ''      ,
+        region: ''      ,
+        date1:  ''      ,
+        date2:  ''      ,
+        delivery: false ,
+        type: []        ,
+        resource: ''    ,
+        desc: ''
+    };
+    
+    //
+    get bDialog():boolean
+    {
+        return this.$store.state.GlobalDialog.bGameSetting ;
+    }
+
+    //
+    set bDialog(val:boolean)
+    {
+        this.$store.commit( 'ShowGameSettingDialog', val);
+        this.$store.state.GlobalDialog.bGameSetting = val;
+    }
 }
