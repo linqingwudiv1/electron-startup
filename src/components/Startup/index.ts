@@ -196,7 +196,7 @@ export default class StartupComponent extends Vue
       this.downinfo.handlefiles.push( ['下载失败:' + fullpath, false] );
       item.state = EM_DownloadItemState.Error;
     }) 
-    .on('end', ()=> {
+    .on('end', () => {
       item.transferSize = item.contentSize;
       item.state = EM_DownloadItemState.Completed;
 
@@ -292,7 +292,6 @@ export default class StartupComponent extends Vue
    */
   private hasFileUnzip(path:string)
   {
-
     this.downinfo.handlefiles.push(['解压完成:' + path, true]);
     this.$nextTick().then( (vue:any) =>
     {
@@ -301,19 +300,22 @@ export default class StartupComponent extends Vue
     });
   }
 
+  /**
+   * 
+   */
   public onclick_setting = _.throttle( () =>
   {
     this.$store.commit( 'ShowGameSettingDialog', true);
   });
+
   /**
    * 更新应用, 启动应用节流
    */
   public onclick_update = _.throttle( ()=>
   {
     this.downinfo.bunzipping = true   ;
-
     this.downinfo.FileCount = 0       ;
-    this.downinfo.handlefiles  = [] ;
+    this.downinfo.handlefiles  = []   ;
     this.handlewaitdownloadlist()     ;
   }, 500);
 
