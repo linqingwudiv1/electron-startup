@@ -1,7 +1,6 @@
 import service from '@/utils/requestServices';
 import progress from 'request-progress';
 
-
 export function GetWaitDownloadList(version:string )
 {
     return service.get('');

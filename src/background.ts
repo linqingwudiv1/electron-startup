@@ -23,9 +23,9 @@ app.on('activate', () =>
 
 app.on('ready', async () => 
 {
-  if (isDevelopment && !process.env.IS_TEST) 
+  if ( isDevelopment && 
+       !process.env.IS_TEST ) 
   {
-
   }
   GMPMethod.createWindow();
 })
@@ -38,9 +38,9 @@ if (isDevelopment) {
       if (data === 'graceful-exit') 
       {
         app.quit();
-      }
-    })
-  } 
+      } 
+    });
+  }
   else 
   {
     process.on('SIGTERM', () => 

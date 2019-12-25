@@ -87,11 +87,11 @@
           margin: 0;
           padding 5px;
         p:nth-child(even) 
-          background :rgb(200,200,200);
+          background :rgb(200, 200, 200);
         p:nth-child(odd) 
-          background :rgb(200,200,211);
+          background :rgb(200, 200, 211);
         p:hover
-          background: rgb(81,104,150);
+          background: rgb(81, 104, 150);
   .statusbar
     p
       margin: 0;

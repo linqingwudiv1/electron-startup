@@ -58,7 +58,7 @@ export class DownloadItem
   uri:string = '';
   /** 文件大小 */
   contentSize:number = 0;
-  /** 以接收大小 */
+  /** 已接收大小 */
   transferSize:number = 0;
   /** 文件类型 */
   fileType:EM_DownloadItemFileType = EM_DownloadItemFileType.Common;
