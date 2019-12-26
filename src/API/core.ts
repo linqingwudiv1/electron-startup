@@ -1,12 +1,14 @@
 import service from '@/utils/requestServices';
 import progress from 'request-progress';
 
+//最大接受长度 256kb
+const Max_Range = 256;
 export function GetWaitDownloadList(version:string )
 {
     return service.get('');
 };
 
-export function DownloadUpdateZip(path:string)
+export function DownloadFile(path:string)
 {
     return progress( service.get( encodeURI(path), { json: false } ), 
     {
@@ -14,8 +16,9 @@ export function DownloadUpdateZip(path:string)
     });
 }
 
-export function DownloadUpdateZip1(path:string, start:number, end:number)
+export function DownloadFilePartMutilple(path:string, start:number, end:number)
 {
+    console.log(path, start, end);
     return progress( service.get( encodeURI(path), 
     {
         headers: {
