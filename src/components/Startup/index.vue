@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="statusbar">
-          <template v-if="!bUnzipComplated">
+          <template v-if="!bUnzipCompleted">
             <p v-if="downinfo.bunzipping">下载安装中...</p>
             <p v-else>完成</p>
           </template>
@@ -39,7 +39,10 @@
           </div>
         </div>
         <el-button class="ele-item animated zoomIn supfast" size="medium" type="info" v-on:click="onclick_setting">系统设置</el-button>
+        <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_pause">暂停更新</el-button>
+        <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_resume">重新下载</el-button>
         <template v-if="bUpdate">
+
           <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_update">更新应用</el-button>
         </template>
         <template v-else>

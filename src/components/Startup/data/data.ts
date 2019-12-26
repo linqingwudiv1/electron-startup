@@ -4,6 +4,8 @@ import {join, dirname} from 'path';
 import {existsSync, statSync} from 'fs';
 import GApp from '@/Global/MainProcess/GApp';
 import { DownloadFile } from '@/API/core';
+import { RequestProgress } from 'request-progress';
+
 /**
  * 文件类型
  */
@@ -59,6 +61,7 @@ export interface IDownloadPacketInfo
    * 路径和是否需要解压
    */
   DownloadDirList:Array<DownloadItem>;
+
   /**
    * 
    */
@@ -66,11 +69,13 @@ export interface IDownloadPacketInfo
   /**
    * 所有已处理文件..
    */
+
   handlefiles:Array<[string,boolean]>;
   /**
    * 
    */
   FileCount:number;
+
   /**
    * 
    */
@@ -96,18 +101,27 @@ export class DownloadItem
   }
   /** 标题 */
   title:string = '';
+  
   /** 下载路径 */
   uri:string = '';
+
   /** 文件大小 */
   contentSize:number = 0;
+
   /** 已接收大小 */
   transferSize:number = 0;
+
   /** 当前分段数 */
   segment:number = 0;
+
   /** 文件类型 */
   fileType:EM_DownloadItemFileType = EM_DownloadItemFileType.Common;
+
   /** 下载状态 */
   state:EM_DownloadItemState = EM_DownloadItemState.None;
+
+  /** 请求列表--预留扩展多线程下载 */
+  requests:Array<RequestProgress> =[];
 
   /** 分段请求,当前起始的byte位置 */
   public get byte_pos_start_def():number
@@ -153,7 +167,7 @@ export class DownloadItem
     }
   }
 
-  /** 文件大小，返回-1 文件不存在 */
+  /** 文件大小，返回0 文件不存在或尚未开始下载 */
   public get fileSize():number
   {
     if ( existsSync(this.fullPath))
@@ -162,9 +176,8 @@ export class DownloadItem
     }
     else 
     {
-      return -1;
+      return 0;
     }
-    
   }
 
   /** 如果 绝对路径不存在则创建 */
@@ -180,7 +193,4 @@ export class DownloadItem
     
     return fullpath;
   }
-
-
-
 };

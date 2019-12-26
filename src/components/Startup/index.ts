@@ -14,7 +14,7 @@ import request from 'request';
 //custom component
 import QingProgress from '@/components/progress/index.vue';
 import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
-import { RequestProgressState } from 'request-progress';
+import { RequestProgressState, RequestProgress } from 'request-progress';
 //data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
 //#endregion
@@ -119,7 +119,6 @@ export default class StartupComponent extends Vue
     {
       return true;
     }
-
     return false;
   }
 
@@ -161,7 +160,7 @@ export default class StartupComponent extends Vue
   {
     let fullpath = item.fullPath;
 
-    DownloadFile( item.uri )
+    let req = DownloadFile( item.uri )
     .on('response', ( res:request.Response ) =>
     {
       if(res.statusCode === 200)
@@ -203,12 +202,13 @@ export default class StartupComponent extends Vue
   {
     let fullpath = item.fullPath;
 
-    DownloadFilePartMutilple(item.uri, item.byte_pos_start_def, item.byte_pos_end_def)
-    .on('response',( res:request.Response ) =>
+    let req = DownloadFilePartMutilple(item.uri, item.byte_pos_start_def, item.byte_pos_end_def);
+    item.requests.push(req);
+    req.on('response', ( res:request.Response ) =>
     {
       if( res.statusCode === 206 )
       {
-        let len:number = parseInt( (res.headers as any )['content-range'].match(/\/(\d*)/)[1] );
+        let len:number = parseInt( ( res.headers as any )['content-range'].match(/\/(\d*)/)[1] );
         item.state = EM_DownloadItemState.Downloading;
         item.contentSize = len;
       }
@@ -227,6 +227,8 @@ export default class StartupComponent extends Vue
       item.state = EM_DownloadItemState.Error;
     })
     .on('complete', (res:request.Response) => {
+      item.requests.slice(item.requests.indexOf(req));
+
       item.transferSize = item.byte_pos_end_def + 1;
       if ( item.isCompleted )
       {
@@ -328,12 +330,13 @@ export default class StartupComponent extends Vue
    */
   private hasFileUnzip(path:string)
   {
-    this.downinfo.handlefiles.push(['解压完成(unpack completed):' + path, true]);
     this.$nextTick().then( (vue:any) =>
     {
       let ele:any = document.getElementById('unzipfilelist');
       ele.scrollTop = ele.scrollHeight;
     });
+    this.downinfo.handlefiles.push(['解压完成(unpack completed):' + path, true]);
+
   }
 
   /**
@@ -342,6 +345,31 @@ export default class StartupComponent extends Vue
   public onclick_setting = _.throttle( () =>
   {
     this.$store.commit( 'ShowGameSettingDialog', true);
+  });
+
+
+  /**
+   * 暂停更新
+   */
+  public onclick_pause = _.throttle( () =>
+  {
+    this.downinfo.DownloadDirList.forEach((item:DownloadItem) => {
+      item.requests.forEach( ( item:RequestProgress )=>
+      {
+        item.pause();
+      });
+    });
+  });
+
+  public onclick_resume = _.throttle( ()=>
+  {
+    this.downinfo.DownloadDirList.forEach( ( item:DownloadItem ) => 
+    {
+      item.requests.forEach( (item:RequestProgress) =>
+      {
+        item.resume();
+      });
+    });
   });
 
   /**
