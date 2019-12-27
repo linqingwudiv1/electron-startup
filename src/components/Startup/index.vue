@@ -2,11 +2,11 @@
   <div class="main-com">
       <div class="content">
         <h1>软件更新应用启动器</h1>
-        <span>{{AppInfo.version}}</span>
+        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}</span>
         <el-divider></el-divider>
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
-            <p class="item animated slideInLeft supfast" v-bind:class="{ 'erroritem':item[1] == false }" 
+            <p class="item animated slideInLeft supfast" v-bind:class="{ 'erroritem' : item[1] == false }" 
                                                          v-for="(item,index) in downinfo.handlefiles" 
                                                          v-bind:key="index">
               {{item[0]}}
@@ -38,15 +38,29 @@
             </template>
           </div>
         </div>
-        <el-button class="ele-item animated zoomIn supfast" size="medium" type="info" v-on:click="onclick_setting">系统设置</el-button>
-        <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_pause">暂停更新</el-button>
-        <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_resume">重新下载</el-button>
+        <el-button class="ele-item animated zoomIn supfast" 
+                   size="medium" 
+                   type="info"    
+                   v-on:click="onclick_setting">系统设置</el-button>
+        <el-button class="ele-item animated zoomIn supfast" 
+                   size="medium" 
+                   type="danger" 
+                   v-on:click="onclick_pause">暂停更新</el-button>
+        <el-button class="ele-item animated zoomIn supfast" 
+                   size="medium" 
+                   type="primary" 
+                   v-on:click="onclick_resume">重新下载</el-button>
         <template v-if="bUpdate">
-
-          <el-button class="ele-item animated zoomIn supfast" size="medium" type="primary" v-on:click="onclick_update">更新应用</el-button>
+          <el-button class="ele-item animated zoomIn supfast" 
+                     size="medium" 
+                     type="primary" 
+                     v-on:click="onclick_update">更新应用</el-button>
         </template>
         <template v-else>
-          <el-button class="ele-item animated zoomIn supfast" size="medium" type="success" v-bind:disabled="!bStartup" v-on:click="onclick_startup">启动应用</el-button>
+          <el-button class="ele-item animated zoomIn supfast" 
+                     size="medium" type="success" 
+                     v-bind:disabled="!bStartup" 
+                     v-on:click="onclick_startup">启动应用</el-button>
         </template>
       </div>
   </div>
@@ -55,10 +69,10 @@
 <script lang="ts" src="./index.ts"></script>
 <style scoped lang="stylus">
 .main-com
-  position:absolute;
+  position: absolute;
   width : calc(100% - 16px);
   height: calc(100% - 16px);
-  padding 8px;
+  padding: 8px;
   background: lightgrey;
   user-select: none;
   display: flex;

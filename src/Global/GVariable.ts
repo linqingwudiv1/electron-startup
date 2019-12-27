@@ -3,4 +3,5 @@
  */
 export class GVariable
 {
+    
 }

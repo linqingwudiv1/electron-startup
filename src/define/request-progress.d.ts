@@ -59,7 +59,7 @@ declare module 'request-progress'
          * @total The total payload size in bytes
          * @transferred The transferred payload size in bytes
          */
-        size:{total:number,transferred:number};
+        size:{total:number,transferred:number,previousTransfer:number};
 
         /**
          * 

@@ -80,6 +80,11 @@ export interface IDownloadPacketInfo
    * 
    */
   bPause:boolean;
+
+  /**
+   * 当前请求数
+   */
+  curReqCount:number;
 };
 
 /**
@@ -113,6 +118,9 @@ export class DownloadItem
 
   /** 当前分段数 */
   segment:number = 0;
+
+  /** 当前分段已接受大小 */
+  segment_transferSize:number = 0;
 
   /** 文件类型 */
   fileType:EM_DownloadItemFileType = EM_DownloadItemFileType.Common;

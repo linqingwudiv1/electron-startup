@@ -10,6 +10,7 @@ export default class GameSettingDialogComponent extends Vue
 {
     mounted() {
     };
+    
     public form:any = {
         name:   ''      ,
         region: ''      ,
@@ -30,7 +31,7 @@ export default class GameSettingDialogComponent extends Vue
     //
     set bDialog(val:boolean)
     {
-        this.$store.commit( 'ShowGameSettingDialog', val);
+        this.$store.commit( 'ShowGameSettingDialog',  val);
         this.$store.state.GlobalDialog.bGameSetting = val;
     }
 }

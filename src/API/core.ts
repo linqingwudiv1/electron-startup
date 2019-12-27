@@ -18,12 +18,11 @@ export function DownloadFile(path:string)
 
 export function DownloadFilePartMutilple(path:string, start:number, end:number)
 {
-    console.log(path, start, end);
     return progress( service.get( encodeURI(path), 
     {
         headers: {
             'range': `bytes=${start}-${end}`
         },
         json: false 
-    }) , {} );
+    }), { bRetainData :true } );
 }
