@@ -1,10 +1,16 @@
 import { GConst } from '@/Global/GConst';
 import { mkdir } from 'shelljs';
-import {join, dirname} from 'path';
+import {join, dirname, resolve} from 'path';
 import {existsSync, statSync} from 'fs';
 import GApp from '@/Global/MainProcess/GApp';
-import { DownloadFile } from '@/API/core';
-import { RequestProgress } from 'request-progress';
+import { RequestProgress } from 'request-progress-ex';
+
+const DownCache_Files:Array<string> = [];
+//
+for(let i = 0; i < 10; i++)
+{
+  DownCache_Files.push( resolve( GApp.SystemStore.get('CacheDir') , `${i}.zip` ) );
+}
 
 /**
  * 文件类型
@@ -71,6 +77,7 @@ export interface IDownloadPacketInfo
    */
 
   handlefiles:Array<[string,boolean]>;
+  
   /**
    * 
    */
@@ -187,11 +194,26 @@ export class DownloadItem
       return 0;
     }
   }
-
+  
   /** 如果 绝对路径不存在则创建 */
   public get fullPath():string
   {
-    const fullpath = join(GApp.MountedDir, this.uri);
+    let fullpath;
+    switch (this.fileType) 
+    {
+      default:
+      case EM_DownloadItemFileType.Common:
+      {
+        fullpath = join(GApp.MountedDir, this.uri);
+        break;
+      }
+      case EM_DownloadItemFileType.Zip:
+      {
+        fullpath = DownCache_Files[0];
+        break;
+      }
+    }
+
     let fulldir = dirname(fullpath);
 
     if ( !existsSync(fulldir) )

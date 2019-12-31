@@ -2,28 +2,22 @@
 import { Component, Vue } from'vue-property-decorator';
 import { shell } from 'electron';
 import {mkdir} from 'shelljs';
-import { createWriteStream, existsSync,  statSync, fstat, readFileSync, readFile, mkdirSync, stat, unlinkSync } from 'fs';
+import { createWriteStream, existsSync,  statSync, fstat, readFileSync, readFile, mkdirSync, stat, unlinkSync, WriteStream } from 'fs';
 import { dirname,resolve,join } from 'path'; 
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import GApp from '@/Global/MainProcess/GApp';
 import _, { delay } from 'lodash';
-import { DownloadFile,DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
+import { DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
 import AdmZip from 'adm-zip';
 import { from } from 'linq';
 import request from 'request';
 // custom component
 import QingProgress from '@/components/progress/index.vue';
 import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
-import { RequestProgressState, RequestProgress } from 'request-progress';
+import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
 //#endregion
-const DownCache_Files:Array<string> = [];
-//
-for(let i = 0; i < 10; i++)
-{
-  DownCache_Files.push( resolve( GApp.SystemStore.get('CacheDir') , `${i}.zip` ) );
-}
 
 @Component(
   {
@@ -39,14 +33,14 @@ export default class StartupComponent extends Vue
     version: '0.1.0'
   };
 
-  //** *
+  //
   public downinfo:IDownloadPacketInfo = 
   {
     DownloadDirList : [ /* new DownloadItem('demo.MP4','/public/demo.MP4', EM_DownloadItemFileType.Common) ,*/
-                           new DownloadItem('管理端.zip','/管理端.zip', EM_DownloadItemFileType.Common) ,
-                        /* new DownloadItem('favicon.ico','/favicon.ico', EM_DownloadItemFileType.Common)  ,
+                           new DownloadItem('管理端.zip',  '/管理端.zip', EM_DownloadItemFileType.Zip) ,
+                        /* new DownloadItem('favicon.ico', '/favicon.ico', EM_DownloadItemFileType.Common)  ,
                            new DownloadItem('package-lock.json','/package-lock.json', EM_DownloadItemFileType.Common)  ,
-                           new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
+                        /* new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
                            new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common) */ ] ,
     bunzipping : false  ,
     handlefiles:[]      ,
@@ -58,11 +52,11 @@ export default class StartupComponent extends Vue
   /** */
   mounted():void
   {
-    GetWaitDownloadList(GApp.UEVersion).then( (res:any)=>
+    GetWaitDownloadList(GApp.UEVersion).then( ( res:any ) =>
     {
-      console.log(``);
     });
   }
+
 
   /** 是否可启动 */
   public get bStartup():boolean
@@ -97,11 +91,12 @@ export default class StartupComponent extends Vue
    
     let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
     
-    console.log(Cur_downloadSize,Total_downloadSize, ret_val);
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
+
     return ret_val;
   }
   
+  /** */
   public percent_download:Array<number> = [];
 
   /** */
@@ -150,66 +145,45 @@ export default class StartupComponent extends Vue
   private reqBranch(item:DownloadItem)
   {
     this.downinfo.curReqCount++;
+    
+    if( existsSync( item.fullPath ) )
+    {
+      unlinkSync( item.fullPath );
+    }
     switch (item.fileType) 
     {
       case EM_DownloadItemFileType.Common:
       {
-        if( existsSync( item.fullPath ) )
-        {
-          unlinkSync( item.fullPath );
-        }
-
-        this.biz_filedownload_range(item);
-
+        this.download_progress(item, () => { /** */ } );
         break;
       }
       case EM_DownloadItemFileType.Zip:
       {
-        this.biz_zipdownload(item);
+        this.download_progress(item, ()=> { this.unpack_zip(item); });
         break;
       }
     }
   }
 
-  /**
-   * 下载文件/range
-   * @param item HTTP路径和安装相对路径
-   */
-  private biz_filedownload_range( item:DownloadItem ):void
+  private download_progress(item:DownloadItem, onsuccessful:()=>void ):void
   {
-    let fullpath = item.fullPath;
-    let req = DownloadFilePartMutilple(item.uri, item.byte_pos_start_def, item.byte_pos_end_def);
+    const fullpath = item.fullPath;
+    const req = DownloadFilePartMutilple(item.uri, item.byte_pos_start_def, item.byte_pos_end_def);
     let _res:request.Response; 
     item.requests.push(req);
+
     item.segment_transferSize = 0;
 
     req.on('response', ( res:request.Response ) =>
     {
-      _res = res;
-      if( res.statusCode === 206 )
-      {  
-        let len:number = parseInt( ( res.headers as any )['content-range'].match(/\/(\d*)/)[1] );
-        item.state = EM_DownloadItemState.Downloading;
-        item.contentSize = len;
-      }
-      else 
-      {
-        item.state = EM_DownloadItemState.Error;
-        this.downinfo.curReqCount--;
-      }
+      _res = this.handle_res_event(res, item);
     })
     .on('progress', ( state:RequestProgressState ) =>
     {
-      console.log('progress......', req, _res.isPaused(), state, item.transferSize);
-
       if ( !_res.isPaused() )
       {
-        item.transferSize  += state.size.previousTransfer;
+        item.transferSize += state.size.previousTransfer;
       }
-    })
-    .on('data', ( data:Buffer ) =>
-    {
-      //console.log('data ----:', data.length);
     })
     .on('error', ( error:any ) =>
     {
@@ -222,86 +196,54 @@ export default class StartupComponent extends Vue
       item.requests.slice( item.requests.indexOf(req) );
       item.transferSize = item.byte_pos_end_def + 1;
       item.segment_transferSize = item.byte_pos_end_def - item.byte_pos_start_def + 1;
-
       if ( item.isCompleted )
       {
         this.downinfo.curReqCount--;
-        this.downinfo.handlefiles.push( ['下载完成:' + fullpath, true]);
-        item.state = EM_DownloadItemState.Completed;
+        this.downinfo.handlefiles.push( ['下载完成:' + fullpath, true] );
       }
-      else
+      else 
       {
         item.segment++;
-        this.biz_filedownload_range(item);
+        this.download_progress(item, onsuccessful );
       }
     })
-    .pipe( createWriteStream( fullpath, { flags: 'a+' } ) );
+    .pipe( createWriteStream( fullpath, { flags: 'a+' } ) )
+    .on('finish', () =>
+    {
+      if (item.isCompleted)
+      {
+        item.state = EM_DownloadItemState.Completed;
+  
+        onsuccessful();     
+      }
+    });
   }
 
   /**
-   * 下载压缩包，并解压安装
-   * @param item 下载路径
+   * 返回
+   * @param res 
+   * @param item 
    */
-  private biz_zipdownload(item:DownloadItem):void
-  {
-    let path = item.uri;
-    let _res:request.Response; 
-    let req = DownloadFilePartMutilple( path , 
-                                        item.byte_pos_start_def, 
-                                        item.byte_pos_end_def);
-    
-    item.requests.push(req);
-    req.on('response', ( res:request.Response ) =>
-    { 
-      _res = res;
-      if(res.statusCode === 200)
-      {
-        let len:number = parseInt( ( res.headers as any )['content-length'] );
-        item.contentSize = len;
-        item.state = EM_DownloadItemState.Downloading;
-      }
-      else 
-      {
-        item.state = EM_DownloadItemState.Error;
-      }
-    })
-    .on('progress', (state:RequestProgressState)=>
-    {
-      item.transferSize = state.size.transferred;
-    })
-    .on('complete', () =>
-    {
-      item.requests.slice( item.requests.indexOf(req) );
-      item.transferSize = item.byte_pos_end_def + 1;
-      item.segment_transferSize = item.byte_pos_end_def - item.byte_pos_start_def + 1;
+  private handle_res_event( res: request.Response, item: DownloadItem) {
 
-      if (item.isCompleted)
-      {
-        this.downinfo.curReqCount--;
-        this.unpack_zip(item);
-      }
-      else 
-      {
-        item.segment++;
-        this.biz_zipdownload(item);
-      }
-    })
-    .on('error', (err:any) =>
+    if (res.statusCode === 206) 
     {
-      this.downinfo.curReqCount--;
+      let len: number = parseInt((res.headers as any)['content-range'].match(/\/(\d*)/)[1]);
+      item.state = EM_DownloadItemState.Downloading;
+      item.contentSize = len;
+    }
+    else 
+    {
       item.state = EM_DownloadItemState.Error;
-
-      this.downinfo.handlefiles.push(['解压失败(unpack failured):' + path, false]);
-    })
-    .pipe(createWriteStream (DownCache_Files[0]) );
+      this.downinfo.curReqCount--;
+    }
+    return res;
   }
 
   private unpack_zip(item:DownloadItem)
   {
-    this.downinfo.curReqCount--;
-    item.transferSize = item.contentSize;
-    item.state = EM_DownloadItemState.Completed;
-    const zipPath = DownCache_Files[0];
+    console.log(item.fullPath);
+    const zipPath = item.fullPath;
     this.downinfo.handlefiles.push( ['下载完成:' + zipPath, true] );
 
     if( existsSync(zipPath)    && 
@@ -365,14 +307,14 @@ export default class StartupComponent extends Vue
     this.$store.commit( 'ShowGameSettingDialog', true);
   });
 
-
   /**
    * 暂停更新
    */
   public onclick_pause = _.throttle( () =>
   {
-    this.downinfo.DownloadDirList.forEach((item:DownloadItem) => {
-      item.requests.forEach( ( req:RequestProgress )=>
+    this.downinfo.DownloadDirList.forEach((item:DownloadItem) => 
+    {
+      item.requests.forEach( ( req:RequestProgress ) =>
       {
         req.pause();
       });
@@ -389,14 +331,14 @@ export default class StartupComponent extends Vue
       });
     });
   }, 100);
-
+  
   /**
    * 更新应用, 启动应用节流
    */
-  public onclick_update = _.throttle( ()=>
+  public onclick_update = _.throttle( () =>
   {
-    this.downinfo.bunzipping = true   ;
-    this.downinfo.FileCount =  this.downinfo.DownloadDirList.length;
+    this.downinfo.bunzipping   = true ;
+    this.downinfo.FileCount    = this.downinfo.DownloadDirList.length;
     this.downinfo.handlefiles  = []   ;
     this.handlewaitdownloadlist()     ;
   }, 500);

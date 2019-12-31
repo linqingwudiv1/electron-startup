@@ -1,5 +1,5 @@
 import service from '@/utils/requestServices';
-import progress from 'request-progress';
+import progress,{RequestProgressOptions} from 'request-progress-ex';
 
 //最大接受长度 256kb
 const Max_Range = 256;
@@ -10,10 +10,7 @@ export function GetWaitDownloadList(version:string )
 
 export function DownloadFile(path:string)
 {
-    return progress( service.get( encodeURI(path), { json: false } ), 
-    {
-        json: false
-    });
+    return progress( service.get( encodeURI(path), { json: false } ), {});
 }
 
 export function DownloadFilePartMutilple(path:string, start:number, end:number)
@@ -22,7 +19,7 @@ export function DownloadFilePartMutilple(path:string, start:number, end:number)
     {
         headers: {
             'range': `bytes=${start}-${end}`
-        },
+        } ,
         json: false 
-    }), { bRetainData :true } );
+    }), {  bRetainData :true } );
 }

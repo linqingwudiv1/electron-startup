@@ -7,6 +7,7 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import 'animate.css';
 import '@/assets/css/common.styl';
+import 'default-passive-events';
 Vue.use(ElementUI);
 Vue.config.productionTip = false;
 

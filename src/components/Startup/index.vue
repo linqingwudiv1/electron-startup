@@ -42,6 +42,7 @@
                    size="medium" 
                    type="info"    
                    v-on:click="onclick_setting">系统设置</el-button>
+        
         <el-button class="ele-item animated zoomIn supfast" 
                    size="medium" 
                    type="danger" 
