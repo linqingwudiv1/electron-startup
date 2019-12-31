@@ -10,6 +10,7 @@ import Store from 'electron-store';
    */
   export default class GMPMethod
   {
+      //创建窗口
       public static createWindow ():void 
       {
           GMPMethod.createMainWindow();

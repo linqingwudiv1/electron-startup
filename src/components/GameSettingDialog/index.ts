@@ -11,7 +11,16 @@ export default class GameSettingDialogComponent extends Vue
     mounted() {
     };
     
-    public form:any = {
+    public form:{
+        name:      string       ,
+        region:    string       ,
+        date1:     string       ,
+        date2:     string       ,
+        delivery:  boolean      ,
+        type:      Array<any>   ,
+        resource:  string       ,
+        desc:      string
+    } = {
         name:   ''      ,
         region: ''      ,
         date1:  ''      ,
@@ -21,7 +30,7 @@ export default class GameSettingDialogComponent extends Vue
         resource: ''    ,
         desc: ''
     };
-    
+
     //
     get bDialog():boolean
     {

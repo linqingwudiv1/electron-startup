@@ -1,3 +1,12 @@
+文档生成=> cmd执行:
+```
+    typedoc
+```
+文档位置 .tsdoc
+
+需要修改一下adm-zip源码:
+
+```js        
         /**
          * Asynchronous extractAllTo
          *
@@ -59,3 +68,4 @@
                 });
             })
         }
+```

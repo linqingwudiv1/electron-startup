@@ -331,7 +331,7 @@ export default class StartupComponent extends Vue
       });
     });
   }, 100);
-  
+
   /**
    * 更新应用, 启动应用节流
    */
