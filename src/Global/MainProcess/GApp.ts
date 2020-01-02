@@ -13,7 +13,7 @@ import Store from 'electron-store';
 }
 
 /**
- *  整个App的全局变量,或函数 
+ *  整个App的全局变量(使用getGlobal二次封装)
  */
 export default class GApp
 {
@@ -38,11 +38,9 @@ export default class GApp
       }
       return GApp.sysStore;   
     }
-    
     /** UE4版本号 */
     public static UEVersion:string =  readFileSync('UE/version.json', { encoding: 'utf-8' });
 
+    /** */
     public static childProcess:ChildProcess|null = null; 
-
-    public static test :string;
 }

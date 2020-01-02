@@ -12,7 +12,7 @@ export function Init_MainWindowBus()
 
     ipcMain.on('emp_startup', (ev:IpcMainEvent )=>
     {
-        console.log('--------------------', GApp.test);
+        
         GApp.childProcess = exec('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe', {},
         (error:any, stdout:string, stderr:string) =>
         {

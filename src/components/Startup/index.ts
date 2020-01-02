@@ -6,8 +6,7 @@ import { execSync,spawnSync,spawn,exec } from 'child_process';
 import shelljs,{mkdir} from 'shelljs';
 import { createWriteStream, existsSync,  statSync, fstat, readFileSync, readFile, mkdirSync, stat, unlinkSync, WriteStream } from 'fs';
 import { dirname,resolve,join } from 'path'; 
-import { ipcRenderer, IpcRendererEvent } from 'electron';
-import GApp from '@/Global/MainProcess/GApp';
+import { ipcRenderer, IpcRendererEvent, remote } from 'electron';
 import _, { delay } from 'lodash';
 import { DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
 import AdmZip from 'adm-zip-ex';
@@ -19,9 +18,9 @@ import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
-
-import {} from 'node-ipc';
+import GApp from '@/Global/MainProcess/GApp';
 //#endregion
+
 
 @Component(
   {
@@ -395,7 +394,6 @@ export default class StartupComponent extends Vue
     if ( true || this.bStartup )
     {
       ipcRenderer.send( 'emp_ontray', true);
-      GApp.test = 'abcdef123456';
       ipcRenderer.send( 'emp_startup');
 
     }
