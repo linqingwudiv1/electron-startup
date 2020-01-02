@@ -64,15 +64,9 @@ export interface IDownloadPacketInfo
    * 路径和是否需要解压
    */
   DownloadDirList:Array<DownloadItem>;
-
-  /**
-   * 
-   */
-  bunzipping:boolean;
   /**
    * 所有已处理文件..
    */
-
   handlefiles:Array<[string,boolean]>;
   
   /**
@@ -84,6 +78,8 @@ export interface IDownloadPacketInfo
    * 当前请求数
    */
   curReqCount:number;
+
+  bPause:boolean;
 };
 
 /**
@@ -169,15 +165,6 @@ export class DownloadItem
     return ret_result;
   }
 
-  /** */
-  public get isPause():boolean
-  {
-    /** 找到第一个暂停的请求 */
-    let ret = from( this.requests ).firstOrDefault( x => x.response != undefined && x.response.isPaused(), undefined ) != undefined; 
-
-    return ret;
-  }
-
   /** 文件大小，返回0 文件不存在或尚未开始下载 */
   public get fileSize():number
   {
@@ -189,6 +176,12 @@ export class DownloadItem
     {
       return 0;
     }
+  }
+
+  /** 在请求 **/
+  public get bHasRequest():boolean
+  {
+    return from(this.requests).count() > 0;
   }
   
   /** 如果 绝对路径不存在则创建 */

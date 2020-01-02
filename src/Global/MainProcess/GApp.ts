@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import {join, resolve} from 'path';
+import {ChildProcess} from 'child_process';
 import Store from 'electron-store';
 
 /**
@@ -40,4 +41,8 @@ export default class GApp
     
     /** UE4版本号 */
     public static UEVersion:string =  readFileSync('UE/version.json', { encoding: 'utf-8' });
+
+    public static childProcess:ChildProcess|null = null; 
+
+    public static test :string;
 }

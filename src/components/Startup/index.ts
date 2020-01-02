@@ -1,7 +1,9 @@
 //#region import  
 import { Component, Vue } from'vue-property-decorator';
-import { shell } from 'electron';
-import {mkdir} from 'shelljs';
+//import { shell } from 'electron';
+const {shell} =  require('electron').remote;
+import { execSync,spawnSync,spawn,exec } from 'child_process';
+import shelljs,{mkdir} from 'shelljs';
 import { createWriteStream, existsSync,  statSync, fstat, readFileSync, readFile, mkdirSync, stat, unlinkSync, WriteStream } from 'fs';
 import { dirname,resolve,join } from 'path'; 
 import { ipcRenderer, IpcRendererEvent } from 'electron';
@@ -17,6 +19,8 @@ import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
+
+import {} from 'node-ipc';
 //#endregion
 
 @Component(
@@ -42,53 +46,75 @@ export default class StartupComponent extends Vue
                            new DownloadItem('package-lock.json','/package-lock.json', EM_DownloadItemFileType.Common)  ,
                         /* new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
                            new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common) */ ] ,
-    bunzipping : false  ,
     handlefiles:[]      ,
     FileCount:0         ,
-    curReqCount: 0
+    curReqCount: 0      ,
+    bPause: false
   };
 
   /** */
   mounted():void
   {
+
     GetWaitDownloadList(GApp.UEVersion).then( ( res:any ) =>
     {
     });
   }
-
 
   //#region 属性(property)
   
   /** 是否可启动 */
   public get bStartup():boolean
   {
+    
     let count = from  ( this.downinfo.handlefiles )
                 .where( x => x[1] === false)
                 .count();
 
-    return count == 0;
+    let c = from (this.downinfo.DownloadDirList).where( x => x.state !== EM_DownloadItemState.Completed ).count();
+
+    return count === 0 && c === 0;
+  }
+
+  public get bUnpacking():boolean
+  {
+    let ret_result = this.bStartup && this.downinfo.handlefiles.length > this.downinfo.FileCount;
+    return ret_result;
   }
 
   /** 是否是暂停状态 */
   public get bPause():boolean
   {
-    const ret = from( this.downinfo.DownloadDirList ).firstOrDefault( x => x.isPause, undefined ) != undefined;
-    return ret;
+    return this.downinfo.bPause;
   }
-
-  /** 是否可更新 */
-  public get bUpdate():boolean 
+  
+  public set bPause(val:boolean)
   {
-    let count =  from  ( this.downinfo.DownloadDirList )
-                 .count();
+    this.downinfo.DownloadDirList.forEach((item:DownloadItem) => 
+    {
+      item.requests.forEach( ( req:RequestProgress ) =>
+      {
+        if (val)
+        {
+          req.pause();
+        }
+        else 
+        {
+          req.resume();
+        }
+      });
+    });
 
-    return count > 0;
+    this.downinfo.bPause = val;
   }
 
   /** 是否有接收数据 */
   public get bRevice():boolean
   {
-    let ret_result = from(this.downinfo.DownloadDirList).firstOrDefault(x => x.bRevice, undefined) != undefined;
+    let ret_result = from(this.downinfo.DownloadDirList)
+                     .where(x => x.bRevice)
+                     .count() > 0;
+
     return ret_result;
   }
 
@@ -191,12 +217,12 @@ export default class StartupComponent extends Vue
     const fullpath = item.fullPath;
     const req = DownloadFilePartMutilple(item.uri, item.byte_pos_start_def, item.byte_pos_end_def);
     let _res:request.Response; 
-    item.requests.push(req);
 
     item.segment_transferSize = 0;
 
     req.on('response', ( res:request.Response ) =>
     {
+      item.requests.push(req);
       _res = this.handle_res_event(res, item);
     })
     .on('progress', ( state:RequestProgressState ) =>
@@ -214,7 +240,7 @@ export default class StartupComponent extends Vue
     })
     .on('complete', (res:request.Response) => 
     {
-      item.requests.slice( item.requests.indexOf(req) );
+      item.requests.splice(item.requests.indexOf(req), 1);
       item.transferSize = item.byte_pos_end_def + 1;
       item.segment_transferSize = item.byte_pos_end_def - item.byte_pos_start_def + 1;
       if ( item.isCompleted )
@@ -231,10 +257,10 @@ export default class StartupComponent extends Vue
     .pipe( createWriteStream( fullpath, { flags: 'a+' } ) )
     .on('finish', () =>
     {
+      //分段下载，isCompleted 判断不能少..
       if (item.isCompleted)
       {
         item.state = EM_DownloadItemState.Completed;
-  
         onsuccessful();     
       }
     });
@@ -263,7 +289,6 @@ export default class StartupComponent extends Vue
 
   private unpack_zip(item:DownloadItem)
   {
-    console.log(item.fullPath);
     const zipPath = item.fullPath;
     this.downinfo.handlefiles.push( ['下载完成:' + zipPath, true] );
 
@@ -319,11 +344,11 @@ export default class StartupComponent extends Vue
       let ele:any = document.getElementById('unzipfilelist');
       ele.scrollTop = ele.scrollHeight;
     });
+
     this.downinfo.handlefiles.push(['解压完成(unpack completed):' + path, true]);
   }
 
 //#endregion
-
 
 //#region 页面响应事件处理
 
@@ -337,36 +362,26 @@ export default class StartupComponent extends Vue
   });
 
   /**
-   * 暂停更新
+   * 暂停下载
    */
   public onclick_pause = _.throttle( () =>
   {
-    this.downinfo.DownloadDirList.forEach((item:DownloadItem) => 
-    {
-      item.requests.forEach( ( req:RequestProgress ) =>
-      {
-        req.pause();
-      });
-    });
-  }, 100);
+    this.bPause = true;
+  }, 150);
 
+  /**
+   * 继续下载
+   */
   public onclick_resume = _.throttle( ()=>
   {
-    this.downinfo.DownloadDirList.forEach( ( item:DownloadItem ) => 
-    {
-      item.requests.forEach( (item:RequestProgress) =>
-      {
-        item.resume();
-      });
-    });
-  }, 100);
+    this.bPause = false;
+  }, 150);
 
   /**
    * 更新应用, 启动应用节流
    */
   public onclick_update = _.throttle( () =>
   {
-    this.downinfo.bunzipping   = true ;
     this.downinfo.FileCount    = this.downinfo.DownloadDirList.length;
     this.downinfo.handlefiles  = []   ;
     this.handlewaitdownloadlist()     ;
@@ -377,10 +392,12 @@ export default class StartupComponent extends Vue
    */
   public onclick_startup =_.throttle( ()=>
   {
-    if ( this.bStartup )
+    if ( true || this.bStartup )
     {
       ipcRenderer.send( 'emp_ontray', true);
-      shell.openItem('D:/UE4Deloy/WindowsNoEditor/BJ_3DDesignAPP.exe');
+      GApp.test = 'abcdef123456';
+      ipcRenderer.send( 'emp_startup');
+
     }
     else 
     {

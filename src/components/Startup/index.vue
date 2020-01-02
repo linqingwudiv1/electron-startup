@@ -16,8 +16,11 @@
       </div>
       <div class="statusbar">
           <template v-if="!bUnzipCompleted">
+            <p style="color:#00000000;">aabbccdd</p>
+            <!-- 
             <p v-if="downinfo.bunzipping">下载安装中...</p>
-            <p v-else>完成</p>
+            <p v-else>完成</p> 
+            -->
           </template>
           <template v-else>
             <p style="color:#00000000;">&nbsp;&nbsp;&nbsp;</p>
@@ -43,19 +46,19 @@
                    type="info"    
                    v-on:click="onclick_setting">系统设置</el-button>
 
-        <template v-if="bUpdate">
+        <template v-if="!bStartup">
           <template v-if="!bRevice">
             <el-button class="ele-item animated zoomIn supfast" 
-                      size="medium"
-                      type="primary" 
-                      @click="onclick_update">更新应用</el-button>
+                       size="medium"
+                       type="primary" 
+                       @click="onclick_update">更新应用</el-button>
           </template>
           <template v-else>
-            <template v-if="bPause">
-              <el-button  class="ele-item animated zoomIn supfast" 
-                          size="medium" 
-                          type="danger" 
-                          v-on:click="onclick_pause">暂停更新</el-button>
+            <template v-if="!bPause">
+              <el-button class="ele-item animated zoomIn supfast" 
+                         size="medium" 
+                         type="danger" 
+                         v-on:click="onclick_pause">暂停更新</el-button>
             </template>
             <template v-else>
               <el-button class="ele-item animated zoomIn supfast" 
@@ -64,17 +67,17 @@
                          v-on:click="onclick_resume">继续下载</el-button> 
             </template>
           </template>
-          <template>
-
-          </template>
-
         </template>
         <template v-else>
           <el-button class="ele-item animated zoomIn supfast" 
                      size="medium" type="success" 
-                     v-bind:disabled="!bStartup" 
+                     v-bind:disabled="!bUnpacking"
                      v-on:click="onclick_startup">启动应用</el-button>
         </template>
+                  <el-button class="ele-item animated zoomIn supfast" 
+                     size="medium" type="success" 
+
+                     v-on:click="onclick_startup">启动应用</el-button>
       </div>
   </div>
 </template>

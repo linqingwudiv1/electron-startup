@@ -7,6 +7,8 @@ declare namespace Electron
        * @param event 
        * @param listener 
        */
-      send(event:'emp_onC', listener:(arg:string)=>void ):void;
+      send(event:'emp_ontray', listener:(isTray:boolean)=>void ):void;
+
+      send(event:'emp_startup', listener:()=>void):void;
    }
 }

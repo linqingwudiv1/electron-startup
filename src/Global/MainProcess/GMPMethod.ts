@@ -94,6 +94,7 @@ import Store from 'electron-store';
           GWin.MainWindow.on('closed', () => 
           {
             GWin.MainWindow = null;
+            
           });
           GWin.MainWindow.on('minimize', ( ev:any ) =>
           {
