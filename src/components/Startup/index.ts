@@ -8,7 +8,7 @@ import { ipcRenderer, IpcRendererEvent } from 'electron';
 import GApp from '@/Global/MainProcess/GApp';
 import _, { delay } from 'lodash';
 import { DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
-import AdmZip from 'adm-zip';
+import AdmZip from 'adm-zip-ex';
 import { from } from 'linq';
 import request from 'request';
 // custom component
@@ -45,7 +45,6 @@ export default class StartupComponent extends Vue
     bunzipping : false  ,
     handlefiles:[]      ,
     FileCount:0         ,
-    bPause : false      ,
     curReqCount: 0
   };
 
@@ -58,6 +57,8 @@ export default class StartupComponent extends Vue
   }
 
 
+  //#region 属性(property)
+  
   /** 是否可启动 */
   public get bStartup():boolean
   {
@@ -68,43 +69,53 @@ export default class StartupComponent extends Vue
     return count == 0;
   }
 
+  /** 是否是暂停状态 */
+  public get bPause():boolean
+  {
+    const ret = from( this.downinfo.DownloadDirList ).firstOrDefault( x => x.isPause, undefined ) != undefined;
+    return ret;
+  }
+
   /** 是否可更新 */
   public get bUpdate():boolean 
   {
     let count =  from  ( this.downinfo.DownloadDirList )
-                 .where( x => x.state !== EM_DownloadItemState.Completed )
                  .count();
 
     return count > 0;
   }
 
-  /** */
+  /** 是否有接收数据 */
+  public get bRevice():boolean
+  {
+    let ret_result = from(this.downinfo.DownloadDirList).firstOrDefault(x => x.bRevice, undefined) != undefined;
+    return ret_result;
+  }
+
+  /** 全局下载进度 */
   public get percentage_downprocess():number
   {
     let Total_downloadSize = from( this.downinfo.DownloadDirList )
                              .select( x => x.contentSize  )
                              .defaultIfEmpty(0).sum();
-
+                             
     let Cur_downloadSize   = from( this.downinfo.DownloadDirList )
                              .select( x => x.transferSize )
                              .defaultIfEmpty(0).sum();
-   
+
     let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
     
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
 
     return ret_val;
   }
-  
-  /** */
-  public percent_download:Array<number> = [];
 
-  /** */
+  /** 安装进度 */
   public get percentage_mountprocess():number
   {
     //成功处理文件数
     let handlefilecount = from ( this.downinfo.handlefiles )
-                                 .where( x=> x[1] === true )
+                                 .where( x => x[1] === true )
                                  .count();
     
     let ret_val = ( handlefilecount / this.downinfo.FileCount) * 100;
@@ -121,6 +132,9 @@ export default class StartupComponent extends Vue
     }
     return false;
   }
+
+  //#endregion
+
 
   /**
    * 
@@ -150,6 +164,7 @@ export default class StartupComponent extends Vue
     {
       unlinkSync( item.fullPath );
     }
+    
     switch (item.fileType) 
     {
       case EM_DownloadItemFileType.Common:
@@ -165,6 +180,12 @@ export default class StartupComponent extends Vue
     }
   }
 
+//#region 这里属于逻辑处理，极少的页面交互逻辑,有时间的话可以优先解耦代码
+  /**
+   * 
+   * @param item 
+   * @param onsuccessful 
+   */
   private download_progress(item:DownloadItem, onsuccessful:()=>void ):void
   {
     const fullpath = item.fullPath;
@@ -273,11 +294,13 @@ export default class StartupComponent extends Vue
 
           let path = dirname( entryPath );
           // unzip entry......
-          zip.extractEntryToAsync(zipEntry, path , true, true, (err:any) =>
+          zip.extractEntryToAsync(zipEntry, path , true, (err:any) =>
           {
             if ( err != undefined )
             {
               console.log(err);
+              this.downinfo.handlefiles.push(['解压失败(unpack completed):' + path, false]);
+              return;
             }
             this.hasFileUnzip( entryPath );
           });
@@ -298,6 +321,12 @@ export default class StartupComponent extends Vue
     });
     this.downinfo.handlefiles.push(['解压完成(unpack completed):' + path, true]);
   }
+
+//#endregion
+
+
+//#region 页面响应事件处理
+
 
   /**
    * 
@@ -362,3 +391,5 @@ export default class StartupComponent extends Vue
     }
   }, 500);
 }
+
+//#endregion

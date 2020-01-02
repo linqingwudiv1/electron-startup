@@ -42,20 +42,32 @@
                    size="medium" 
                    type="info"    
                    v-on:click="onclick_setting">系统设置</el-button>
-        
-        <el-button class="ele-item animated zoomIn supfast" 
-                   size="medium" 
-                   type="danger" 
-                   v-on:click="onclick_pause">暂停更新</el-button>
-        <el-button class="ele-item animated zoomIn supfast" 
-                   size="medium" 
-                   type="primary" 
-                   v-on:click="onclick_resume">重新下载</el-button>
+
         <template v-if="bUpdate">
-          <el-button class="ele-item animated zoomIn supfast" 
-                     size="medium" 
-                     type="primary" 
-                     v-on:click="onclick_update">更新应用</el-button>
+          <template v-if="!bRevice">
+            <el-button class="ele-item animated zoomIn supfast" 
+                      size="medium"
+                      type="primary" 
+                      @click="onclick_update">更新应用</el-button>
+          </template>
+          <template v-else>
+            <template v-if="bPause">
+              <el-button  class="ele-item animated zoomIn supfast" 
+                          size="medium" 
+                          type="danger" 
+                          v-on:click="onclick_pause">暂停更新</el-button>
+            </template>
+            <template v-else>
+              <el-button class="ele-item animated zoomIn supfast" 
+                         size="medium" 
+                         type="primary" 
+                         v-on:click="onclick_resume">继续下载</el-button> 
+            </template>
+          </template>
+          <template>
+
+          </template>
+
         </template>
         <template v-else>
           <el-button class="ele-item animated zoomIn supfast" 

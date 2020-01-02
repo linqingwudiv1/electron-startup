@@ -4,6 +4,7 @@ import {join, dirname, resolve} from 'path';
 import {existsSync, statSync} from 'fs';
 import GApp from '@/Global/MainProcess/GApp';
 import { RequestProgress } from 'request-progress-ex';
+import { from } from 'linq';
 
 const DownCache_Files:Array<string> = [];
 //
@@ -49,10 +50,6 @@ export enum EM_DownloadItemState
    */
   Completed,
   /**
-   * 暂停...
-   */
-  Pause,
-  /**
    * 未知错误
    */
   Error
@@ -82,11 +79,6 @@ export interface IDownloadPacketInfo
    * 
    */
   FileCount:number;
-
-  /**
-   * 
-   */
-  bPause:boolean;
 
   /**
    * 当前请求数
@@ -159,7 +151,8 @@ export class DownloadItem
   /** 是否下载完成,已接受数据大小 === 请求资源大小 */
   public get isCompleted():boolean
   {
-    if (this.contentSize === this.transferSize )
+    if (  this.contentSize  === this.transferSize && 
+          this.transferSize !== 0 )
     {
       return true;
     }
@@ -169,17 +162,20 @@ export class DownloadItem
     }
   }
 
+  /** 是否有接收数据 */
+  public get bRevice():boolean
+  {
+    let ret_result = this.transferSize > 0;
+    return ret_result;
+  }
+
   /** */
   public get isPause():boolean
   {
-    if (this.state === EM_DownloadItemState.Pause)
-    {
-      return true;
-    }
-    else 
-    {
-      return false;
-    }
+    /** 找到第一个暂停的请求 */
+    let ret = from( this.requests ).firstOrDefault( x => x.response != undefined && x.response.isPaused(), undefined ) != undefined; 
+
+    return ret;
   }
 
   /** 文件大小，返回0 文件不存在或尚未开始下载 */

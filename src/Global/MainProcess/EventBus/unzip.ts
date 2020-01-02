@@ -1,4 +1,3 @@
-
 import { ipcMain, IpcMainEvent  } from "electron";
 
 import { dirname } from 'path';
