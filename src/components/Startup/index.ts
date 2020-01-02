@@ -12,7 +12,7 @@ import { DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
 import AdmZip from 'adm-zip-ex';
 import { from } from 'linq';
 import request from 'request';
-// custom component
+// custom component 
 import QingProgress from '@/components/progress/index.vue';
 import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
