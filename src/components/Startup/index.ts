@@ -12,13 +12,14 @@ import { DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
 import AdmZip from 'adm-zip-ex';
 import { from } from 'linq';
 import request from 'request';
+import ipc from 'node-ipc';
 // custom component 
 import QingProgress from '@/components/progress/index.vue';
 import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
-import GApp from '@/Global/MainProcess/GApp';
+import GApp,{} from '@/Global/MainProcess/GApp';
 //#endregion
 
 
@@ -165,12 +166,13 @@ export default class StartupComponent extends Vue
    * 
    */
   private handlewaitdownloadlist()
-  {  
+  { 
     // 缓存路径不存在则创建路径
-    if (!existsSync( GApp.SystemStore.get('CacheDir') ) )
+    if ( !existsSync( GApp.SystemStore.get('CacheDir') ) )
     {
       let stdout = mkdir('-p', resolve( GApp.SystemStore.get('CacheDir') )).stdout;
     }
+
     this.downinfo.DownloadDirList.forEach( (item:DownloadItem, index:number) => 
     {
       this.reqBranch(item);
@@ -351,34 +353,25 @@ export default class StartupComponent extends Vue
 
 //#region 页面响应事件处理
 
-
-  /**
-   * 
-   */
+  //
   public onclick_setting = _.throttle( () =>
   {
     this.$store.commit( 'ShowGameSettingDialog', true);
   });
 
-  /**
-   * 暂停下载
-   */
+  // 暂停下载
   public onclick_pause = _.throttle( () =>
   {
     this.bPause = true;
   }, 150);
 
-  /**
-   * 继续下载
-   */
+  // 继续下载
   public onclick_resume = _.throttle( ()=>
   {
     this.bPause = false;
   }, 150);
 
-  /**
-   * 更新应用, 启动应用节流
-   */
+  // 更新应用, 启动应用节流
   public onclick_update = _.throttle( () =>
   {
     this.downinfo.FileCount    = this.downinfo.DownloadDirList.length;
@@ -386,22 +379,19 @@ export default class StartupComponent extends Vue
     this.handlewaitdownloadlist()     ;
   }, 500);
 
-  /**
-   * 启动应用节流
-   */
+  // 启动应用节流
   public onclick_startup =_.throttle( ()=>
   {
     if ( true || this.bStartup )
     {
-      ipcRenderer.send( 'emp_ontray', true);
-      ipcRenderer.send( 'emp_startup');
-
+      ipcRenderer.send( 'emp_ontray', true );
+      ipcRenderer.send( 'emp_startup' );
     }
     else 
     {
-      this.$alert(`正在更新应用..请等待(wait updating application )`, {
+      this.$alert(`正在更新应用..请等待( wait updating application )`, {
         confirmButtonText: '确定(confirm)',
-        callback: (action:any) => {}
+        callback: (action:any) => { }
       });
     }
   }, 500);

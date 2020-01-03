@@ -18,17 +18,18 @@ import Store from 'electron-store';
 export default class GApp
 {
     /** App Root Path */
-    public static readonly RootDir:string = process.cwd() ;
+    public static readonly RootDir:string = process.cwd();
+
     /** App Update Fit Path */
     public static readonly MountedDir:string = join( GApp.RootDir ,'/UE/');
 
     /** 系统持久化配置实例 */
     private static sysStore?:Store<SystemStore> = undefined;
-    
+
     /** Get 系统持久化配置单例 */
     public static get SystemStore():Store<SystemStore>
     {
-      if (GApp.sysStore == undefined)
+      if ( GApp.sysStore === undefined )
       {
         GApp.sysStore = new Store<SystemStore>({
           defaults: {
@@ -36,11 +37,12 @@ export default class GApp
           }
         });
       }
-      return GApp.sysStore;   
+      return GApp.sysStore;
     }
+
     /** UE4版本号 */
     public static UEVersion:string =  readFileSync('UE/version.json', { encoding: 'utf-8' });
 
-    /** */
+    /**  */
     public static childProcess:ChildProcess|null = null; 
 }

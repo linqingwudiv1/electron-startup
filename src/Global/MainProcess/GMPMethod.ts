@@ -65,6 +65,7 @@ import Store from 'electron-store';
             width: 800, 
             height: 600, 
             backgroundColor: '#fffffff',
+            resizable: false,
             webPreferences: {
               nodeIntegration: true,
               webSecurity: false, // CORS

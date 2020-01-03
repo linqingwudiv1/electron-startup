@@ -22,6 +22,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+package-lock.json
 
 # Electron-builder output
 /dist_electron
