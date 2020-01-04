@@ -4,6 +4,10 @@ import GMPMethod from '@/Global/MainProcess/GMPMethod';
 import GWin from '@/Global/MainProcess/GWin';
 import GApp from './Global/MainProcess/GApp';
 import {exec} from 'child_process';
+
+import net from 'net';
+import path from 'path';
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true, standard: true } }]);
@@ -43,6 +47,7 @@ app.on('ready', async () =>
        !process.env.IS_TEST ) 
   {
   }
+
   GMPMethod.createWindow();
 })
 
