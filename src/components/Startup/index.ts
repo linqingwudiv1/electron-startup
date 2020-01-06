@@ -387,6 +387,7 @@ export default class StartupComponent extends Vue
     const PipeServer = join('\\\\.\\pipe','\\my_pipe');
 
     let server = net.createServer().listen(PipeServer);
+
     server.on("error",function(exception:any) 
     {
       console.log("server error:" + exception);
