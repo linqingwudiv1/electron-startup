@@ -382,41 +382,48 @@ export default class StartupComponent extends Vue
   }, 500);
 
   // 启动应用节流
-  public onclick_startup =_.throttle( ()=>
+  public onclick_startup =_.throttle( () =>
   {
-    let server = net.createServer().listen(
-      join('\\\\.\\pipe','\\my_pipe'));
-    server.on("error",function(exception:any){
+    const PipeServer = join('\\\\.\\pipe','\\my_pipe');
+
+    let server = net.createServer().listen(PipeServer);
+    server.on("error",function(exception:any) 
+    {
       console.log("server error:" + exception);
     });
 
-    server.on('connection',(connect:net.Socket)=>
+    server.on('connection',(connect:net.Socket) =>
     { 
       console.log('has connection ');
-      connect.write("hello");
       connect.setEncoding('binary');
-      connect.on('error',function(exception:any){
+      connect.on('error',(exception:any) =>
+      {
         console.log('socket error:' + exception);
         connect.end();
       });
       
-      connect.on('connect', ()=> {
+      connect.on('connect', ()=> 
+      {
         console.log('has connection...');
-      })
-
+      });
+      
       //客户端关闭事件
-      connect.on('close',function(data:any){
+      connect.on('close', (data:any) =>
+      {
         console.log('client closed!');
       });
       
-      connect.on("data",function (data:any) {
+      connect.on("data", (data:any) =>
+      {
         //server接受到client发送的数据
         console.log(data);
-            //server给client发送数据	
-        connect.write("hello");
+        //server给client发送数据
+	
+        // Uint8Array arr ;
+        connect.write("hello,linqing林清");
       })
     });
-  
+
     return;
 
     if ( true || this.bStartup )

@@ -17,12 +17,10 @@ app.on('window-all-closed', () => {
   {
     app.quit();
   }
-})
+});
 
 app.on('before-quit',()=>
 {
-  console.log('--------------------before-quit', GApp.childProcess != null);
-
   console.log('--------------------before-quit', GApp.childProcess!.pid);
   if (GApp.childProcess != null)
   {
@@ -30,7 +28,6 @@ app.on('before-quit',()=>
     console.log('-------------------------', cmd);
     exec(cmd);  
   }
-
 });
 
 app.on('activate', () => 
@@ -39,7 +36,7 @@ app.on('activate', () =>
   {
     GMPMethod.createWindow();
   }
-})
+});
 
 app.on('ready', async () => 
 {
@@ -49,7 +46,7 @@ app.on('ready', async () =>
   }
 
   GMPMethod.createWindow();
-})
+});
 
 if (isDevelopment) {
   if (process.platform === 'win32') 

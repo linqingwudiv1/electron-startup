@@ -30,14 +30,18 @@ import Store from 'electron-store';
             GWin.MainWindow.setSkipTaskbar(true);
             GWin.MainWindow.hide();
           }
+
           GMPMethod.createTrayIcon();
+
           if (GWin.TrayIcon)
+          {
             GWin.TrayIcon.displayBalloon(
               {
                 icon :undefined,
                 title :'进入系统托盘',
                 content :''
               });
+          }
         }
         else 
         {
