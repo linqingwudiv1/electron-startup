@@ -3,6 +3,7 @@ import { BrowserWindow, Menu, Tray, app } from 'electron';
 import { Init_MainWindowBus } from './Window/MainWindowBus';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import Store from 'electron-store';
+import { InitPipeServer } from '@/NamedPipeServer';
 
 
   /**
@@ -13,6 +14,7 @@ import Store from 'electron-store';
       //创建窗口
       public static createWindow ():void 
       {
+          InitPipeServer();
           GMPMethod.createMainWindow();
       }
       

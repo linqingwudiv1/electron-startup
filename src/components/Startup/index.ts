@@ -384,50 +384,7 @@ export default class StartupComponent extends Vue
   // 启动应用节流
   public onclick_startup =_.throttle( () =>
   {
-    const PipeServer = join('\\\\.\\pipe','\\my_pipe');
-
-    let server = net.createServer().listen(PipeServer);
-
-    server.on("error",function(exception:any) 
-    {
-      console.log("server error:" + exception);
-    });
-
-    server.on('connection',(connect:net.Socket) =>
-    { 
-      console.log('has connection ');
-      connect.setEncoding('binary');
-      connect.on('error',(exception:any) =>
-      {
-        console.log('socket error:' + exception);
-        connect.end();
-      });
-      
-      connect.on('connect', ()=> 
-      {
-        console.log('has connection...');
-      });
-      
-      //客户端关闭事件
-      connect.on('close', (data:any) =>
-      {
-        console.log('client closed!');
-      });
-      
-      connect.on("data", (data:any) =>
-      {
-        //server接受到client发送的数据
-        console.log(data);
-        //server给client发送数据
-	
-        // Uint8Array arr ;
-        connect.write("hello,linqing林清");
-      })
-    });
-
-    return;
-
-    if ( true || this.bStartup )
+    if ( this.bStartup )
     {
       ipcRenderer.send( 'emp_ontray', true );
       ipcRenderer.send( 'emp_startup' );

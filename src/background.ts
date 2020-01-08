@@ -25,7 +25,6 @@ app.on('before-quit',()=>
   if (GApp.childProcess != null)
   {
     let cmd = `taskkill /PID ${GApp.childProcess.pid} -t -f`;
-    console.log('-------------------------', cmd);
     exec(cmd);  
   }
 });
@@ -40,6 +39,7 @@ app.on('activate', () =>
 
 app.on('ready', async () => 
 {
+  
   if ( isDevelopment && 
        !process.env.IS_TEST ) 
   {
