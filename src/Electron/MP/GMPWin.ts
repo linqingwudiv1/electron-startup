@@ -3,7 +3,7 @@ import { BrowserWindow, Tray } from 'electron';
 /**
  *  全局Window
  */
-export default class GWin
+export default class GMPWin
 {
     /** 主渲染Window */
     public static MainWindow:BrowserWindow|null = null;

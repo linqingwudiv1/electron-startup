@@ -2,7 +2,7 @@ import { GConst } from '@/Global/GConst';
 import { mkdir } from 'shelljs';
 import {join, dirname, resolve} from 'path';
 import {existsSync, statSync} from 'fs';
-import GApp from '@/Global/MainProcess/GApp';
+import GMPApp from '@/Electron/MP/GMPApp';
 import { RequestProgress } from 'request-progress-ex';
 import { from } from 'linq';
 
@@ -10,7 +10,7 @@ const DownCache_Files:Array<string> = [];
 //
 for(let i = 0; i < 10; i++)
 {
-  DownCache_Files.push( resolve( GApp.SystemStore.get('CacheDir') , `${i}.zip` ) );
+  DownCache_Files.push( resolve( GMPApp.SystemStore.get('CacheDir') , `${i}.zip` ) );
 }
 
 /**
@@ -193,7 +193,7 @@ export class DownloadItem
       default:
       case EM_DownloadItemFileType.Common:
       {
-        fullpath = join(GApp.MountedDir, this.uri);
+        fullpath = join(GMPApp.MountedDir, this.uri);
         break;
       }
       case EM_DownloadItemFileType.Zip:

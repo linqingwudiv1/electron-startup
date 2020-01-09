@@ -21,7 +21,8 @@ import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
-import GApp,{} from '@/Global/MainProcess/GApp';
+import GMPApp from '@/Electron/MP/GMPApp';
+
 //#endregion
 
 
@@ -58,7 +59,7 @@ export default class StartupComponent extends Vue
   mounted():void
   {
 
-    GetWaitDownloadList(GApp.UEVersion).then( ( res:any ) =>
+    GetWaitDownloadList(GMPApp.UEVersion).then( ( res:any ) =>
     {
     });
   }
@@ -170,9 +171,9 @@ export default class StartupComponent extends Vue
   private handlewaitdownloadlist()
   { 
     // 缓存路径不存在则创建路径
-    if ( !existsSync( GApp.SystemStore.get('CacheDir') ) )
+    if ( !existsSync( GMPApp.SystemStore.get('CacheDir') ) )
     {
-      let stdout = mkdir('-p', resolve( GApp.SystemStore.get('CacheDir') )).stdout;
+      let stdout = mkdir('-p', resolve( GMPApp.SystemStore.get('CacheDir') )).stdout;
     }
 
     this.downinfo.DownloadDirList.forEach( (item:DownloadItem, index:number) => 
@@ -312,7 +313,7 @@ export default class StartupComponent extends Vue
             return;
           }
 
-          const entryPath = join( GApp.MountedDir,  zipEntry.entryName);
+          const entryPath = join( GMPApp.MountedDir,  zipEntry.entryName);
           
           if ( zipEntry.isDirectory )
           {
@@ -384,9 +385,8 @@ export default class StartupComponent extends Vue
   // 启动应用节流
   public onclick_startup =_.throttle( () =>
   {
-    if ( this.bStartup )
+    if ( true  || this.bStartup )
     {
-      ipcRenderer.send( 'emp_ontray', true );
       ipcRenderer.send( 'emp_startup' );
     }
     else 

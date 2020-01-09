@@ -1,17 +1,14 @@
 'use strict'
 import { app, protocol, Tray, Menu } from 'electron';
-import GMPMethod from '@/Global/MainProcess/GMPMethod';
-import GWin from '@/Global/MainProcess/GWin';
-import GApp from './Global/MainProcess/GApp';
-import {exec} from 'child_process';
+import GMPMethod from '@/Electron/MP/GMPMethod';
+import GMPWin from '@/Electron/MP/GMPWin';
 
-import net from 'net';
-import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true, standard: true } }]);
- 
+
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') 
   {
@@ -21,17 +18,12 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit',()=>
 {
-  console.log('--------------------before-quit', GApp.childProcess!.pid);
-  if (GApp.childProcess != null)
-  {
-    let cmd = `taskkill /PID ${GApp.childProcess.pid} -t -f`;
-    exec(cmd);  
-  }
+  GMPMethod.killCP();
 });
 
 app.on('activate', () => 
 {
-  if (GWin.MainWindow === null) 
+  if (GMPWin.MainWindow === null) 
   {
     GMPMethod.createWindow();
   }

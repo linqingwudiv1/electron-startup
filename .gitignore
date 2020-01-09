@@ -30,3 +30,5 @@ package-lock.json
 /cache
 /tsdoc
 /UE
+/build
+package-lock.json

@@ -1,12 +1,12 @@
 import { ipcMain, IpcMainEvent  } from "electron";
 
 import { dirname } from 'path';
-import GWin from '@/Global/MainProcess/GWin';
+import GMPWin from '@/Electron/MP/GMPWin';
 const AdmZip = require('adm-zip') ;
 
 const UnzipDir:string  = "d:/temp/";
 
-function Init_Decompress()
+export function Init_Decompress()
 {
   ipcMain.on('emp_unzip', (ev:IpcMainEvent, zipPath:string):void =>
   {
@@ -23,7 +23,7 @@ function Init_Decompress()
 
     zipEntries.forEach((zipEntry:any,index:number) => 
     {
-      if ( GWin.MainWindow == null || 
+      if ( GMPWin.MainWindow == null || 
            zipEntry == null ) 
       {
         return;
@@ -52,4 +52,3 @@ function Init_Decompress()
 
   });
 }
-export default Init_Decompress;
