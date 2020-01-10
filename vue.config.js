@@ -11,7 +11,9 @@ module.exports = {
     },
     pluginOptions: {
       electronBuilder: {
-        builderOptions: {}
+        builderOptions: {
+
+        }
       },
       express: {
         shouldServeApp: true,
