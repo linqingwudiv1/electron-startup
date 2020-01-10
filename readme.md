@@ -5,3 +5,10 @@
     typedoc
 ```
 文档位置 .tsdoc
+
+测试服务器...依赖
+
+```js
+npm install -g ts-node
+npm install -g typescript
+```
