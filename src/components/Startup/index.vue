@@ -2,14 +2,14 @@
   <div class="main-com">
       <div class="content">
         <h1>软件更新应用启动器</h1>
-        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}</span>
+        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}  ----- {{test}}</span>
         <el-divider></el-divider>
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
             <p class="item animated slideInLeft supfast" v-bind:class="{ 'erroritem' : item[1] == false }" 
                                                          v-for="(item,index) in downinfo.handlefiles" 
                                                          v-bind:key="index">
-              {{item[0]}}
+              {{item[0]}} 
             </p>
           </div>
         </div>

@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { Message, MessageBox } from 'element-ui';
+import { GConst } from '@/Global/GConst';
 //import { UserModule } from '@/store/modules/user';
 
 const service = axios.create({
-  baseURL: process.env.APP_BIZ_BASE_API,
+  baseURL: GConst.BaseUrl,
   timeout: 5000
 });
 

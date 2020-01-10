@@ -4,16 +4,15 @@ import { Component, Vue } from'vue-property-decorator';
 const {shell} =  require('electron').remote;
 import { execSync,spawnSync,spawn,exec } from 'child_process';
 import shelljs,{mkdir} from 'shelljs';
-import { createWriteStream, existsSync,  statSync, fstat, readFileSync, readFile, mkdirSync, stat, unlinkSync, WriteStream } from 'fs';
+import { createWriteStream, existsSync,  statSync, unlinkSync } from 'fs';
 import { dirname,resolve,join } from 'path'; 
 import { ipcRenderer, IpcRendererEvent, remote } from 'electron';
 import _, { delay } from 'lodash';
-import { DownloadFilePartMutilple, GetWaitDownloadList } from '@/API/core';
+import { DownloadFilePartMutilple, GetNeedDownloadList } from '@/API/core';
 import AdmZip from 'adm-zip-ex';
 import { from } from 'linq';
 import request from 'request';
 import ipc from 'node-ipc';
-
 import net from 'net';
 // custom component 
 import QingProgress from '@/components/progress/index.vue';
@@ -22,6 +21,7 @@ import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
 import GMPApp from '@/Electron/MP/GMPApp';
+import { GConst } from '@/Global/GConst';
 
 //#endregion
 
@@ -43,12 +43,12 @@ export default class StartupComponent extends Vue
   //
   public downinfo:IDownloadPacketInfo = 
   {
-    DownloadDirList : [ /* new DownloadItem('demo.MP4','/public/demo.MP4', EM_DownloadItemFileType.Common) ,*/
+    DownloadDirList : [  new DownloadItem('demo.MP4','/public/demo.MP4', EM_DownloadItemFileType.Common) ,
                            new DownloadItem('管理端.zip',  '/管理端.zip', EM_DownloadItemFileType.Zip) ,
-                        /* new DownloadItem('favicon.ico', '/favicon.ico', EM_DownloadItemFileType.Common)  ,
+                         new DownloadItem('favicon.ico', '/favicon.ico', EM_DownloadItemFileType.Common)  ,
                            new DownloadItem('package-lock.json','/package-lock.json', EM_DownloadItemFileType.Common)  ,
-                        /* new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
-                           new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common) */ ] ,
+                         new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
+                           new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common)  ] ,
     handlefiles:[]      ,
     FileCount:0         ,
     curReqCount: 0      ,
@@ -58,14 +58,18 @@ export default class StartupComponent extends Vue
   /** */
   mounted():void
   {
-
-    GetWaitDownloadList(GMPApp.UEVersion).then( ( res:any ) =>
+    console.log('------',JSON.stringify(this.downinfo.DownloadDirList));
+    GetNeedDownloadList(GMPApp.UEVersion).then( ( res:any ) =>
     {
     });
   }
 
-  //#region 属性(property)
-  
+  //#region 属性(property)  
+  public get test():string 
+  {
+    return GConst.BaseUrl;
+  }
+
   /** 是否可启动 */
   public get bStartup():boolean
   {

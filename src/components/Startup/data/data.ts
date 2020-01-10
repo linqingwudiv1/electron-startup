@@ -21,11 +21,11 @@ export enum EM_DownloadItemFileType
   /**
    * 
    */
-  Common,
+  Common = 0,
   /**
    * zip,需要解压
    */
-  Zip
+  Zip = 1
 };
 
 /**
@@ -95,8 +95,8 @@ export class DownloadItem
    */
   constructor(_title:string,_uri:string,_type:EM_DownloadItemFileType = EM_DownloadItemFileType.Common)
   {
-    this.title = _title;
-    this.uri = _uri;
+    this.title    = _title;
+    this.uri      = _uri;
     this.fileType = _type;
   }
   /** 标题 */

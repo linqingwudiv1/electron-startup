@@ -3,9 +3,9 @@ import progress,{RequestProgressOptions} from 'request-progress-ex';
 
 //最大接受长度 256kb
 const Max_Range = 256;
-export function GetWaitDownloadList(version:string )
+export function GetNeedDownloadList(version:string )
 {
-    return service.get('');
+    return service.get('get');
 };
 
 export function DownloadFile(path:string)

@@ -11,4 +11,7 @@ export class GConst
 
     /** 同时最大请求数...... max together request count */
     public static readonly MaxRequestCount:number = 5;
+
+    /** API地址 */
+    public static readonly BaseUrl:string = (process.env.VUE_APP_BASE_API) as string;
 }

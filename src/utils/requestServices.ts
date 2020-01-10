@@ -1,7 +1,8 @@
 import rp, { RequestPromiseOptions } from 'request-promise';
+import { GConst } from '@/Global/GConst';
 
 const options:RequestPromiseOptions = {
-    baseUrl:`http://129.204.160.155:16677/`,
+    baseUrl: GConst.BaseUrl,
     qs: {
         //access_token: 'xxxxx xxxxx' // -> uri + '?access_token=xxxxx%20xxxxx'
     },
