@@ -43,12 +43,12 @@ export default class StartupComponent extends Vue
   //
   public downinfo:IDownloadPacketInfo = 
   {
-    DownloadDirList : [  new DownloadItem('demo.MP4','/public/demo.MP4', EM_DownloadItemFileType.Common) ,
+    DownloadDirList : [  /*new DownloadItem('demo.MP4','/public/demo.MP4', EM_DownloadItemFileType.Common) ,
                            new DownloadItem('管理端.zip',  '/管理端.zip', EM_DownloadItemFileType.Zip) ,
                          new DownloadItem('favicon.ico', '/favicon.ico', EM_DownloadItemFileType.Common)  ,
                            new DownloadItem('package-lock.json','/package-lock.json', EM_DownloadItemFileType.Common)  ,
                          new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
-                           new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common)  ] ,
+                          new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common)*/  ] ,
     handlefiles:[]      ,
     FileCount:0         ,
     curReqCount: 0      ,
@@ -58,9 +58,12 @@ export default class StartupComponent extends Vue
   /** */
   mounted():void
   {
-    console.log('------',JSON.stringify(this.downinfo.DownloadDirList));
     GetNeedDownloadList(GMPApp.UEVersion).then( ( res:any ) =>
     {
+      this.downinfo.DownloadDirList = [];
+      res.data.forEach((item:any) => {
+        this.downinfo.DownloadDirList.push(new DownloadItem(item.title ,item.uri ,item.fileType ) );
+      });
     });
   }
 
@@ -72,8 +75,7 @@ export default class StartupComponent extends Vue
 
   /** 是否可启动 */
   public get bStartup():boolean
-  {
-    
+  {    
     let count = from  ( this.downinfo.handlefiles )
                 .where( x => x[1] === false)
                 .count();
@@ -134,7 +136,7 @@ export default class StartupComponent extends Vue
                              
     let Cur_downloadSize   = from( this.downinfo.DownloadDirList )
                              .select( x => x.transferSize )
-                             .defaultIfEmpty(0).sum();
+                             .defaultIfEmpty(0).sum();                             
 
     let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
     
@@ -150,6 +152,7 @@ export default class StartupComponent extends Vue
     let handlefilecount = from ( this.downinfo.handlefiles )
                                  .where( x => x[1] === true )
                                  .count();
+    console.log('handlefilecount : ', handlefilecount);
     
     let ret_val = ( handlefilecount / this.downinfo.FileCount) * 100;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
@@ -230,6 +233,7 @@ export default class StartupComponent extends Vue
 
     req.on('response', ( res:request.Response ) =>
     {
+      console.log('111');
       item.requests.push(req);
       _res = this.handle_res_event(res, item);
     })
@@ -283,7 +287,7 @@ export default class StartupComponent extends Vue
 
     if (res.statusCode === 206) 
     {
-      let len: number = parseInt((res.headers as any)['content-range'].match(/\/(\d*)/)[1]);
+      let len:number = parseInt((res.headers as any)['content-range'].match(/\/(\d*)/)[1]);
       item.state = EM_DownloadItemState.Downloading;
       item.contentSize = len;
     }
