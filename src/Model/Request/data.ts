@@ -61,10 +61,6 @@ export enum EM_DownloadItemState
 export interface IDownloadPacketInfo
 {
   /**
-   * 路径和是否需要解压
-   */
-  DownloadDirList:Array<DownloadItem>;
-  /**
    * 所有已处理文件..
    */
   handlefiles:Array<[string,boolean]>;
@@ -125,6 +121,12 @@ export class DownloadItem
 
   /** 请求列表--预留扩展多线程下载 */
   requests:Array<RequestProgress> =[];
+
+  /** */
+  public get requestsOfFailed():Array<DownloadItem>
+  {
+    return from(this.requests).where(x=> x.response!.statusCode !== 206).select( (x:any) => x).toArray() as Array<DownloadItem>;
+  }
 
   /** 分段请求,当前起始的byte位置 */
   public get byte_pos_start_def():number

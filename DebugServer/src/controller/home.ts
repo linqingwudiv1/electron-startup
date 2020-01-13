@@ -25,18 +25,14 @@ route.get('/GetNeedDownloadList',( req, res ) =>
     "requests": []
   }];
   //#endregion
+
   let Version = req.query.version;
+  
   res.json({
             Version: Version,
-            data :data 
-          });
+            data :data
+          });  
 });
-
-route.get(':/slug',( req, res ) =>
-{
-  res.setHeader('Accept-Ranges',  'bytes');
-  res.json( {test : 'abc123456789'} );
-} );
 
 route.get(/public\/*.*/, (req, res, next) =>
 {
@@ -45,6 +41,7 @@ route.get(/public\/*.*/, (req, res, next) =>
   let filepath:string = path.join( __dirname, '../', '../',  decodeURI(url.parse((req.url),true).pathname!)  );
   
   res.setHeader('Content-Type', 'application/octet-stream;');
+
   if (range == undefined) 
   {
     res.statusCode = 200;
@@ -64,14 +61,24 @@ route.get(/public\/*.*/, (req, res, next) =>
   let stats = statSync(filepath);
   
   let total = stats.size;
+  
   let byte_start = start ? parseInt(start)  : 0;
   let byte_end   = end   ? parseInt(end)    : total - 1;
 
   res.setHeader('Accept-Ranges', 'bytes');
   res.setHeader('Content-Range', `bytes ${byte_start}-${byte_end}/${total}`);
 
-  res.statusCode = 206;
-  fs.createReadStream(filepath, { start :byte_start, end : byte_end }).pipe(res);
+  try
+  {
+    res.statusCode = 206;
+    fs.createReadStream(filepath, { start :byte_start, end : byte_end }).pipe(res);
+  }
+  catch(ex)
+  {
+    res.statusCode = 400;
+    
+    res.end(ex);
+  }
 });
   
 export default route;

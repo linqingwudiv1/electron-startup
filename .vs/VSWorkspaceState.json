@@ -3,9 +3,7 @@
     "",
     "\\src",
     "\\src\\components",
-    "\\src\\components\\Startup",
     "\\tests"
   ],
-  "SelectedNode": "\\src\\components\\Startup\\index.vue",
   "PreviewInSolutionExplorer": false
 }

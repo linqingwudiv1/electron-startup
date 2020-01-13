@@ -2,7 +2,7 @@
   <div class="main-com">
       <div class="content">
         <h1>软件更新应用启动器</h1>
-        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}  ----- {{test}}</span>
+        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}  ----- {{test}} ------ {{reqCount_failed}}</span>
         <el-divider></el-divider>
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
@@ -17,10 +17,6 @@
       <div class="statusbar">
           <template v-if="!bUnzipCompleted">
             <p style="color:#00000000;">aabbccdd</p>
-            <!-- 
-            <p v-if="downinfo.bunzipping">下载安装中...</p>
-            <p v-else>完成</p> 
-            -->
           </template>
           <template v-else>
             <p style="color:#00000000;">&nbsp;&nbsp;&nbsp;</p>

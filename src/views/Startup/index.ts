@@ -1,38 +1,34 @@
 //#region import  
-import { Component, Vue } from'vue-property-decorator';
+import { Component, Vue, Prop } from'vue-property-decorator';
 //import { shell } from 'electron';
 const {shell} =  require('electron').remote;
-import { execSync,spawnSync,spawn,exec } from 'child_process';
 import shelljs,{mkdir} from 'shelljs';
 import { createWriteStream, existsSync,  statSync, unlinkSync } from 'fs';
 import { dirname,resolve,join } from 'path'; 
 import { ipcRenderer, IpcRendererEvent, remote } from 'electron';
+const { app } = remote;
 import _, { delay } from 'lodash';
 import { DownloadFilePartMutilple, GetNeedDownloadList } from '@/API/core';
 import AdmZip from 'adm-zip-ex';
-import { from } from 'linq';
+import { from, range } from 'linq';
 import request from 'request';
-import ipc from 'node-ipc';
-import net from 'net';
 // custom component 
 import QingProgress from '@/components/progress/index.vue';
 import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
-import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from './data/data';
+import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from '@/Model/Request/data';
 import GMPApp from '@/Electron/MP/GMPApp';
 import { GConst } from '@/Global/GConst';
-
 //#endregion
 
 
-@Component(
-  {
+@Component({
     components:{
       'qing-progress' : QingProgress,
       'game-setting-dialog' :  GameSettingDialog
     }
-  })
+})
 export default class StartupComponent extends Vue 
 {
   //** *
@@ -40,37 +36,47 @@ export default class StartupComponent extends Vue
     version: '0.1.0'
   };
 
+  /** */
+  public bInit:boolean = false;
+  
+  @Prop({
+      default:[]
+    })
+  public DownloadDirList!:Array<DownloadItem>;
+
   //
   public downinfo:IDownloadPacketInfo = 
   {
-    DownloadDirList : [  /*new DownloadItem('demo.MP4','/public/demo.MP4', EM_DownloadItemFileType.Common) ,
-                           new DownloadItem('管理端.zip',  '/管理端.zip', EM_DownloadItemFileType.Zip) ,
-                         new DownloadItem('favicon.ico', '/favicon.ico', EM_DownloadItemFileType.Common)  ,
-                           new DownloadItem('package-lock.json','/package-lock.json', EM_DownloadItemFileType.Common)  ,
-                         new DownloadItem('1.jpg','/1.jpg', EM_DownloadItemFileType.Common)  ,
-                          new DownloadItem('服装DIY.MP4','/服装DIY.MP4', EM_DownloadItemFileType.Common)*/  ] ,
-    handlefiles:[]      ,
-    FileCount:0         ,
-    curReqCount: 0      ,
+    handlefiles:[]       ,
+    FileCount:0          ,
+    curReqCount: 0       ,
     bPause: false
   };
 
   /** */
   mounted():void
   {
-    GetNeedDownloadList(GMPApp.UEVersion).then( ( res:any ) =>
-    {
-      this.downinfo.DownloadDirList = [];
-      res.data.forEach((item:any) => {
-        this.downinfo.DownloadDirList.push(new DownloadItem(item.title ,item.uri ,item.fileType ) );
-      });
-    });
+    console.log(this.DownloadDirList);
   }
+
+  //#region http biz
+
+
+  //#endregion
 
   //#region 属性(property)  
   public get test():string 
   {
     return GConst.BaseUrl;
+  }
+  
+  //失败的请求数...
+  public get reqCount_failed():number
+  {
+    return from(this.DownloadDirList).sum( (x) =>
+    {
+      return x.requestsOfFailed.length;
+    });
   }
 
   /** 是否可启动 */
@@ -80,7 +86,7 @@ export default class StartupComponent extends Vue
                 .where( x => x[1] === false)
                 .count();
 
-    let c = from (this.downinfo.DownloadDirList).where( x => x.state !== EM_DownloadItemState.Completed ).count();
+    let c = from (this.DownloadDirList).where( x => x.state !== EM_DownloadItemState.Completed ).count();
 
     return count === 0 && c === 0;
   }
@@ -99,7 +105,7 @@ export default class StartupComponent extends Vue
   
   public set bPause(val:boolean)
   {
-    this.downinfo.DownloadDirList.forEach((item:DownloadItem) => 
+    this.DownloadDirList.forEach((item:DownloadItem) => 
     {
       item.requests.forEach( ( req:RequestProgress ) =>
       {
@@ -120,7 +126,7 @@ export default class StartupComponent extends Vue
   /** 是否有接收数据 */
   public get bRevice():boolean
   {
-    let ret_result = from(this.downinfo.DownloadDirList)
+    let ret_result = from(this.DownloadDirList)
                      .where(x => x.bRevice)
                      .count() > 0;
 
@@ -130,11 +136,11 @@ export default class StartupComponent extends Vue
   /** 全局下载进度 */
   public get percentage_downprocess():number
   {
-    let Total_downloadSize = from( this.downinfo.DownloadDirList )
+    let Total_downloadSize = from( this.DownloadDirList )
                              .select( x => x.contentSize  )
                              .defaultIfEmpty(0).sum();
                              
-    let Cur_downloadSize   = from( this.downinfo.DownloadDirList )
+    let Cur_downloadSize   = from( this.DownloadDirList )
                              .select( x => x.transferSize )
                              .defaultIfEmpty(0).sum();                             
 
@@ -152,7 +158,8 @@ export default class StartupComponent extends Vue
     let handlefilecount = from ( this.downinfo.handlefiles )
                                  .where( x => x[1] === true )
                                  .count();
-    console.log('handlefilecount : ', handlefilecount);
+                                 
+    //console.log('handlefilecount : ', handlefilecount);
     
     let ret_val = ( handlefilecount / this.downinfo.FileCount) * 100;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
@@ -183,7 +190,7 @@ export default class StartupComponent extends Vue
       let stdout = mkdir('-p', resolve( GMPApp.SystemStore.get('CacheDir') )).stdout;
     }
 
-    this.downinfo.DownloadDirList.forEach( (item:DownloadItem, index:number) => 
+    this.DownloadDirList.forEach( (item:DownloadItem, index:number) => 
     {
       this.reqBranch(item);
     });
@@ -195,8 +202,6 @@ export default class StartupComponent extends Vue
    */
   private reqBranch(item:DownloadItem)
   {
-    this.downinfo.curReqCount++;
-    
     if( existsSync( item.fullPath ) )
     {
       unlinkSync( item.fullPath );
@@ -219,12 +224,13 @@ export default class StartupComponent extends Vue
 
 //#region 这里属于逻辑处理，极少的页面交互逻辑,有时间的话可以优先解耦代码
   /**
-   * 
+   * 分段下载....
    * @param item 
    * @param onsuccessful 
    */
-  private download_progress(item:DownloadItem, onsuccessful:()=>void ):void
+  private download_progress(item:DownloadItem, onsuccessful:() => void ):void
   {
+    this.downinfo.curReqCount++;
     const fullpath = item.fullPath;
     const req = DownloadFilePartMutilple(item.uri, item.byte_pos_start_def, item.byte_pos_end_def);
     let _res:request.Response; 
@@ -233,9 +239,16 @@ export default class StartupComponent extends Vue
 
     req.on('response', ( res:request.Response ) =>
     {
-      console.log('111');
+      _res = res;
       item.requests.push(req);
-      _res = this.handle_res_event(res, item);
+
+      /**  */
+      if (res.statusCode === 206) 
+      {
+        let len:number = parseInt((res.headers as any)['content-range'].match(/\/(\d*)/)[1]);
+        item.state = EM_DownloadItemState.Downloading;
+        item.contentSize = len;
+      };
     })
     .on('progress', ( state:RequestProgressState ) =>
     {
@@ -244,20 +257,22 @@ export default class StartupComponent extends Vue
         item.transferSize += state.size.previousTransfer;
       }
     })
-    .on('error', ( error:any ) =>
-    {
-      this.downinfo.curReqCount--;
-      this.downinfo.handlefiles.push( [ '下载失败:' + fullpath, false ] );
-      item.state = EM_DownloadItemState.Error;
-    })
     .on('complete', (res:request.Response) => 
     {
+      this.downinfo.curReqCount--;
+      if (res.statusCode !== 206)
+      {
+        //某个分段点错误...
+        this.handle_download_onfailed(_res,item);
+        return;
+      }
+
       item.requests.splice(item.requests.indexOf(req), 1);
       item.transferSize = item.byte_pos_end_def + 1;
       item.segment_transferSize = item.byte_pos_end_def - item.byte_pos_start_def + 1;
+
       if ( item.isCompleted )
       {
-        this.downinfo.curReqCount--;
         this.downinfo.handlefiles.push( ['下载完成:' + fullpath, true] );
       }
       else 
@@ -277,26 +292,19 @@ export default class StartupComponent extends Vue
       }
     });
   }
-
+  
   /**
-   * 返回
-   * @param res 
+   * 
    * @param item 
    */
-  private handle_res_event( res: request.Response, item: DownloadItem) {
+  private handle_download_onfailed( res:request.Response,item: DownloadItem )
+  {
+    this.downinfo.handlefiles.push( [ '下载失败:' + decodeURI(res.request.href) , false ] );
+    //item.requests.splice( item.requests.indexOf( res.request as RequestProgress ), 1 );
 
-    if (res.statusCode === 206) 
-    {
-      let len:number = parseInt((res.headers as any)['content-range'].match(/\/(\d*)/)[1]);
-      item.state = EM_DownloadItemState.Downloading;
-      item.contentSize = len;
-    }
-    else 
-    {
-      item.state = EM_DownloadItemState.Error;
-      this.downinfo.curReqCount--;
-    }
-    return res;
+    //res.destroy();
+
+    item.state = EM_DownloadItemState.Error;
   }
 
   private unpack_zip(item:DownloadItem)
@@ -354,6 +362,7 @@ export default class StartupComponent extends Vue
     this.$nextTick().then( (vue:any) =>
     {
       let ele:any = document.getElementById('unzipfilelist');
+
       ele.scrollTop = ele.scrollHeight;
     });
 
@@ -385,7 +394,7 @@ export default class StartupComponent extends Vue
   // 更新应用, 启动应用节流
   public onclick_update = _.throttle( () =>
   {
-    this.downinfo.FileCount    = this.downinfo.DownloadDirList.length;
+    this.downinfo.FileCount    = this.DownloadDirList.length;
     this.downinfo.handlefiles  = []   ;
     this.handlewaitdownloadlist()     ;
   }, 500);
@@ -393,7 +402,7 @@ export default class StartupComponent extends Vue
   // 启动应用节流
   public onclick_startup =_.throttle( () =>
   {
-    if ( true  || this.bStartup )
+    if ( this.bStartup )
     {
       ipcRenderer.send( 'emp_startup' );
     }

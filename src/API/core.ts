@@ -1,12 +1,13 @@
 import service from '@/utils/requestServices';
 import request from 'request';
 import progress from 'request-progress-ex';
+import GMPApp from '@/Electron/MP/GMPApp';
 
 //最大接受长度 256kb
 const Max_Range = 256;
-export function GetNeedDownloadList(version:string )
+export function GetNeedDownloadList( )
 {
-    return service.get('GetNeedDownloadList');
+    return service.get(`GetNeedDownloadList?veersion=${GMPApp.UEVersion}`, { json: true});
 };
 
 export function DownloadFile(path:string)
@@ -16,7 +17,7 @@ export function DownloadFile(path:string)
 
 export function DownloadFilePartMutilple(path:string, start:number, end:number)
 {
-    return progress( service.get( encodeURI(path), 
+    return progress( service.get( '/reree/' + encodeURI(path), 
     {
         headers: {
             'range': `bytes=${start}-${end}`
