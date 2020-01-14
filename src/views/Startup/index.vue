@@ -103,9 +103,9 @@
       #unzipfilelist
         text-align: left;
         min-height: 100%;
-        height:0px;
+        height    : 0px ;
         overflow-y: auto;
-        overflow-x:hidden;
+        overflow-x: hidden;
         .item
           animation-delay: 0ms;
         .erroritem

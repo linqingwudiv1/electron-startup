@@ -1,43 +1,27 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Startup from '@/views/Startup/index.vue';
-import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { GetNeedDownloadList } from '@/API/core';
 import {DownloadItem} from '@/Model/Request/data';
 import {remote} from 'electron';
-import { delay,debounce } from 'lodash';
+import { delay } from 'lodash';
 const {app} = remote;
 
 @Component(
 {
-  components:
+  components: 
   {
-    startup : Startup,
-    gameSettingDialog: GameSettingDialog
+    startup : Startup
   }
 })
 export default class HomeView extends Vue {
-  public DownloadDirList:Array<DownloadItem>= [];
+  public DownloadDirList:Array<DownloadItem> = [];
 
   public loadingArgs:any = 
   { 
-    //bDownloadList: false,
-    get bDownloadList():boolean
-    {
-      return this._bDownloadList;
-    },
-    t:delay((val:boolean)=>{
-      this.loadingArgs.bDownloadList = val;
-    },500),
-    
-    set bDownloadList(val:boolean)
-    // (val:boolean) 
-    {
-      this.t(val);
-    }  
+    bDownloadList: false
   };
 
   mounted() {
-
     this.http_GetNeedDownloadList();
   }
 
@@ -48,32 +32,36 @@ export default class HomeView extends Vue {
   
   private http_GetNeedDownloadList()
   {
+    //延迟执行,保证动画连续性
+    this.loadingArgs.bDownloadList = true;
 
-    GetNeedDownloadList().then( ( res:any ) =>
-    { 
-      this.DownloadDirList = [];
-      res.data.forEach((item:any) => {
-        this.loadingArgs.bDownloadList = false;
-        this.DownloadDirList.push(new DownloadItem(item.title ,item.uri ,item.fileType ) );
-        console.log('bbb', this.DownloadDirList);
-      });
-    }).catch( (error:any)=>
+    delay( ()=>
     {
-      this.loadingArgs.bDownloadList = false;
-      this.$confirm('网络连接错误,请检查网络连接是否通畅..即将尝试重连连接...点击<退出>可退出当前应用程式', '网络错误', {
-        confirmButtonText: '退出',
-        cancelButtonText: '',
-        type: 'error'
-      }).then(()=>
+      GetNeedDownloadList().then( ( res:any ) =>
       {
-        setTimeout(() => {
-          app.quit();
-        }, 500);
-      }).catch(()=>
-      {
-        this.http_GetNeedDownloadList();
+        this.loadingArgs.bDownloadList = false;
+        this.DownloadDirList = [];
+        res.data.forEach( (item:any) => {
+          this.DownloadDirList.push(new DownloadItem(item.title ,item.uri ,item.fileType ) );
+        });
+      }).catch( (error:any)=>
+      {        
+        this.loadingArgs.bDownloadList = false;
+        this.$alert('网络连接错误,请检查网络连接是否通畅..即将尝试重连连接...点击<退出>可退出当前应用程序', '网络错误', {
+          confirmButtonText: '退出',
+          type: 'error'
+        }).then( () =>
+        {
+          setTimeout(() => {
+            app.quit();
+          }, 300);
+        }).catch( () =>
+        {
+          this.http_GetNeedDownloadList();
+        });
+        console.log(error);
       });
-      console.log(error);
-    });
+    } ,300);
+
   }
 }

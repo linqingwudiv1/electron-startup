@@ -10,5 +10,6 @@ declare namespace Electron
       send(event:'emp_ontray', listener:(isTray:boolean)=>void ):void;
 
       send(event:'emp_startup', listener:()=>void):void;
+
    }
 }

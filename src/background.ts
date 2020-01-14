@@ -4,9 +4,11 @@ import GMPMethod from '@/Electron/MP/GMPMethod';
 import GMPWin from '@/Electron/MP/GMPWin';
 
 
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true, standard: true } }]);
+
 
 
 app.on('window-all-closed', () => {

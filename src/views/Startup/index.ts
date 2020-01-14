@@ -1,5 +1,5 @@
 //#region import  
-import { Component, Vue, Prop } from'vue-property-decorator';
+import { Component, Vue, Prop , Mixins, Watch } from'vue-property-decorator';
 //import { shell } from 'electron';
 const {shell} =  require('electron').remote;
 import shelljs,{mkdir} from 'shelljs';
@@ -14,7 +14,6 @@ import { from, range } from 'linq';
 import request from 'request';
 // custom component 
 import QingProgress from '@/components/progress/index.vue';
-import GameSettingDialog from '@/components/GameSettingDialog/index.vue';
 import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from '@/Model/Request/data';
@@ -22,11 +21,9 @@ import GMPApp from '@/Electron/MP/GMPApp';
 import { GConst } from '@/Global/GConst';
 //#endregion
 
-
 @Component({
     components:{
-      'qing-progress' : QingProgress,
-      'game-setting-dialog' :  GameSettingDialog
+      'qing-progress' : QingProgress
     }
 })
 export default class StartupComponent extends Vue 
@@ -61,10 +58,10 @@ export default class StartupComponent extends Vue
 
   //#region http biz
 
-
   //#endregion
 
   //#region 属性(property)  
+
   public get test():string 
   {
     return GConst.BaseUrl;
@@ -96,16 +93,16 @@ export default class StartupComponent extends Vue
     let ret_result = this.bStartup && this.downinfo.handlefiles.length > this.downinfo.FileCount;
     return ret_result;
   }
-
+  
   /** 是否是暂停状态 */
   public get bPause():boolean
   {
     return this.downinfo.bPause;
   }
-  
+
   public set bPause(val:boolean)
   {
-    this.DownloadDirList.forEach((item:DownloadItem) => 
+    this.DownloadDirList.forEach( ( item:DownloadItem ) => 
     {
       item.requests.forEach( ( req:RequestProgress ) =>
       {
@@ -386,7 +383,7 @@ export default class StartupComponent extends Vue
   }, 150);
 
   // 继续下载
-  public onclick_resume = _.throttle( ()=>
+  public onclick_resume = _.throttle( () =>
   {
     this.bPause = false;
   }, 150);

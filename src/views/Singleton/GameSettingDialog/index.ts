@@ -5,12 +5,15 @@ import { Store } from 'vuex';
 /**
  * 游戏配置相关Dialog
  */
-@Component({})
+@Component(
+    {
+    })
 export default class GameSettingDialogComponent extends Vue 
 {
     mounted() {
+
     };
-    
+
     public form:{
         name:      string       ,
         region:    string       ,
@@ -31,6 +34,22 @@ export default class GameSettingDialogComponent extends Vue
         desc: ''
     };
 
+    /**
+     * 显示
+     */
+    public show()
+    {
+        this.bDialog = true;
+    }
+
+    /**
+     * 隐藏
+     */
+    public hide()
+    {
+        this.bDialog = false;
+    }
+
     //
     get bDialog():boolean
     {
@@ -40,7 +59,8 @@ export default class GameSettingDialogComponent extends Vue
     //
     set bDialog(val:boolean)
     {
+        console.log('store...', this.$store);
         this.$store.commit( 'ShowGameSettingDialog',  val);
-        this.$store.state.GlobalDialog.bGameSetting = val;
+        //this.$store.state.GlobalDialog.bGameSetting = val;
     }
 }
