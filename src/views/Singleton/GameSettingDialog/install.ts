@@ -8,11 +8,11 @@ import router from '@/router/index';
 declare const window:any;
 let instance : any| null = null;
  //构造一个新的Vue实例句柄.....
- 
+
 /**
  * App初始化时调用...
  */
-const install = function (vue:typeof Vue, opts = {})
+const install = function ( vue:typeof Vue, opts = {} )
 {
     //往Vue类里写入一个`静态函数’
     Vue.prototype.$gameSettingDialog = (opt?:any)=>
@@ -23,7 +23,7 @@ const install = function (vue:typeof Vue, opts = {})
             let div = document.createElement('div');
 
             instance  =  new GameSettingDialog({
-                el      : div ,
+                el      : div   ,  
                 store   : store ,  // 如果用到vuex需要包含
                 router  : router   // 同route
             });
