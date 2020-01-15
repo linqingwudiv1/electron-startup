@@ -26,7 +26,7 @@ import { GConst } from '@/Global/GConst';
       'qing-progress' : QingProgress
     }
 })
-export default class StartupComponent extends Vue 
+export default class UpdatorView extends Vue 
 {
   //** *
   public AppInfo:any = {
@@ -36,11 +36,6 @@ export default class StartupComponent extends Vue
   /** */
   public bInit:boolean = false;
   
-  @Prop({
-      default:[]
-    })
-  public DownloadDirList!:Array<DownloadItem>;
-
   //
   public downinfo:IDownloadPacketInfo = 
   {
@@ -53,7 +48,9 @@ export default class StartupComponent extends Vue
   /** */
   mounted():void
   {
-    console.log(this.DownloadDirList);
+    let vedio = this.$refs.vedio as any;  
+    console.log(vedio);
+    vedio['disablePictureInPicture'] = true;
   }
 
   //#region http biz
@@ -66,87 +63,7 @@ export default class StartupComponent extends Vue
   {
     return GConst.BaseUrl;
   }
-  
-  //失败的请求数...
-  public get reqCount_failed():number
-  {
-    return from(this.DownloadDirList).sum( (x) =>
-    {
-      return x.requestsOfFailed.length;
-    });
-  }
 
-  /** 是否可启动 */
-  public get bStartup():boolean
-  {    
-    let count = from  ( this.downinfo.handlefiles )
-                .where( x => x[1] === false)
-                .count();
-
-    let c = from (this.DownloadDirList).where( x => x.state !== EM_DownloadItemState.Completed ).count();
-
-    return count === 0 && c === 0;
-  }
-
-  public get bUnpacking():boolean
-  {
-    let ret_result = this.bStartup && this.downinfo.handlefiles.length > this.downinfo.FileCount;
-    return ret_result;
-  }
-  
-  /** 是否是暂停状态 */
-  public get bPause():boolean
-  {
-    return this.downinfo.bPause;
-  }
-
-  public set bPause(val:boolean)
-  {
-    this.DownloadDirList.forEach( ( item:DownloadItem ) => 
-    {
-      item.requests.forEach( ( req:RequestProgress ) =>
-      {
-        if (val)
-        {
-          req.pause();
-        }
-        else 
-        {
-          req.resume();
-        }
-      });
-    });
-
-    this.downinfo.bPause = val;
-  }
-
-  /** 是否有接收数据 */
-  public get bRevice():boolean
-  {
-    let ret_result = from(this.DownloadDirList)
-                     .where(x => x.bRevice)
-                     .count() > 0;
-
-    return ret_result;
-  }
-
-  /** 全局下载进度 */
-  public get percentage_downprocess():number
-  {
-    let Total_downloadSize = from( this.DownloadDirList )
-                             .select( x => x.contentSize  )
-                             .defaultIfEmpty(0).sum();
-                             
-    let Cur_downloadSize   = from( this.DownloadDirList )
-                             .select( x => x.transferSize )
-                             .defaultIfEmpty(0).sum();                             
-
-    let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
-    
-    ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
-
-    return ret_val;
-  }
 
   /** 安装进度 */
   public get percentage_mountprocess():number
@@ -187,10 +104,6 @@ export default class StartupComponent extends Vue
       let stdout = mkdir('-p', resolve( GMPApp.SystemStore.get('CacheDir') )).stdout;
     }
 
-    this.DownloadDirList.forEach( (item:DownloadItem, index:number) => 
-    {
-      this.reqBranch(item);
-    });
   }
 
   /**
@@ -203,7 +116,7 @@ export default class StartupComponent extends Vue
     {
       unlinkSync( item.fullPath );
     }
-    
+
     switch (item.fileType) 
     {
       case EM_DownloadItemFileType.Common:
@@ -370,40 +283,15 @@ export default class StartupComponent extends Vue
 
 //#region 页面响应事件处理
 
-  //
-  public onclick_setting = _.throttle( () =>
-  {
-    this.$store.commit( 'ShowGameSettingDialog', true);
-  });
-
-  // 暂停下载
-  public onclick_pause = _.throttle( () =>
-  {
-    this.bPause = true;
-  }, 150);
-
-  // 继续下载
-  public onclick_resume = _.throttle( () =>
-  {
-    this.bPause = false;
-  }, 150);
-
-  // 更新应用, 启动应用节流
-  public onclick_update = _.throttle( () =>
-  {
-    this.downinfo.FileCount    = this.DownloadDirList.length;
-    this.downinfo.handlefiles  = []   ;
-    this.handlewaitdownloadlist()     ;
-  }, 500);
 
   // 启动应用节流
   public onclick_startup =_.throttle( () =>
   {
-    if ( this.bStartup )
+    // if ( this.bStartup )
     {
       ipcRenderer.send( 'emp_startup' );
     }
-    else 
+    // else 
     {
       this.$alert(`正在更新应用..请等待( wait updating application )`, {
         confirmButtonText: '确定(confirm)',

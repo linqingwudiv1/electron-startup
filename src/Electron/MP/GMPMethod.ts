@@ -82,9 +82,11 @@ import { GConst } from '@/Global/GConst';
         // Create the browser window.
         GMPWin.MainWindow = new BrowserWindow(
           {
-            width: 800, 
+            width : 800, 
             height: 600, 
-            alwaysOnTop :true,
+            frame: false,
+            titleBarStyle: 'hidden',
+            // alwaysOnTop :true,
             backgroundColor: '#fffffff',
             resizable: false,
             icon:'./ico.jpg',
@@ -125,6 +127,7 @@ import { GConst } from '@/Global/GConst';
             console.log('on minimize.....');
             ev.preventDefault();
             GMPMethod.SetTrayState(true);
+            GMPWin.MainWindow!.focus();
             ev.preventDefault();
           });
       }

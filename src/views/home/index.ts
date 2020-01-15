@@ -1,16 +1,21 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import Startup from '@/views/Startup/index.vue';
+
 import { GetNeedDownloadList } from '@/API/core';
 import {DownloadItem} from '@/Model/Request/data';
-import {remote} from 'electron';
+import {remote, shell} from 'electron';
 import { delay } from 'lodash';
+import _ from 'lodash';
+
+import Updator from './Updator/index.vue';
+import Startup from './Startup/index.vue';
 const {app} = remote;
 
 @Component(
 {
   components: 
   {
-    startup : Startup
+    updator : Updator,
+    statup : Startup
   }
 })
 export default class HomeView extends Vue {
@@ -64,4 +69,13 @@ export default class HomeView extends Vue {
     } ,300);
 
   }
+
+  //#region Event 
+
+
+  public openUrl = _.throttle( (url) => {
+    shell.openExternal(url);
+  });
+
+  //#endregion
 }

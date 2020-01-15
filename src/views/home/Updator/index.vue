@@ -1,9 +1,8 @@
 <template>
   <div class="main-com">
       <div class="content">
-        <h1>软件更新应用启动器</h1>
         <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}  ----- {{test}} ------ {{reqCount_failed}}</span>
-        <el-divider></el-divider>
+
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
             <p class="item animated slideInLeft supfast" v-bind:class="{ 'erroritem' : item[1] == false }" 
@@ -37,16 +36,11 @@
             </template>
           </div>
         </div>
-        <el-button class="ele-item animated zoomIn supfast" 
-                   size="medium" 
-                   type="info"    
-                   v-on:click="onclick_setting">系统设置</el-button>
-
         <template v-if="!bStartup">
           <template v-if="!bRevice">
             <el-button class="ele-item animated zoomIn supfast" 
                        size="medium"
-                       type="primary" 
+                       type="primary"
                        @click="onclick_update">更新应用</el-button>
           </template>
           <template v-else>
@@ -70,10 +64,9 @@
                      v-bind:disabled="!bUnpacking"
                      v-on:click="onclick_startup">启动应用</el-button>
         </template>
-                  <el-button class="ele-item animated zoomIn supfast" 
-                     size="medium" type="success" 
-
-                     v-on:click="onclick_startup">启动应用</el-button>
+          <el-button class="ele-item animated zoomIn supfast" 
+             size="medium" type="success" 
+             v-on:click="onclick_startup">启动应用</el-button>
       </div>
   </div>
 </template>
@@ -81,11 +74,7 @@
 <script lang="ts" src="./index.ts"></script>
 <style scoped lang="stylus">
 .main-com
-  position: absolute;
-  width : calc(100% - 16px);
-  height: calc(100% - 16px);
-  padding: 8px;
-  background: lightgrey;
+  height 100%;
   user-select: none;
   display: flex;
   flex-direction: column;
@@ -120,7 +109,7 @@
         p:nth-child(odd) 
           background :rgb(200, 200, 211);
         p:hover
-          background: rgb(81, 104, 150);
+          background :rgb(81, 104, 150);
   .statusbar
     p
       margin: 0;

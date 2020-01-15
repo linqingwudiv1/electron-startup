@@ -22,7 +22,6 @@ export default (app:Express, http:any) => {
       req.query[key.toLowerCase()] = req.query[key];
       delete req.query[key];
     }
-
     next();
   });
 

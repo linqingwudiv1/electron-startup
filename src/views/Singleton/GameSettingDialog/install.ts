@@ -30,8 +30,8 @@ const install = function ( vue:typeof Vue, opts = {} )
 
             document.body.appendChild(instance.$el);
         }
-
-        return instance as GameSettingDialogComponent;
+        let ret = instance as GameSettingDialogComponent;
+        return ret;
     };
 } 
 
