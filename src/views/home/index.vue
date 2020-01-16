@@ -3,7 +3,7 @@
                     element-loading-spinner="el-icon-loading" 
                     element-loading-background="rgba(180, 180, 180, 0.7)">
     <div>
-      <div class="top">
+      <div id="top-nav-bar" class="top">
         <el-button class="ele-item animated zoomIn supfast" 
                    size="medium"
                    icon="el-icon-s-home"

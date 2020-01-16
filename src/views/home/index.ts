@@ -8,6 +8,7 @@ import _ from 'lodash';
 
 import Updator from './Updator/index.vue';
 import Startup from './Startup/index.vue';
+import { ElectronDragHelper } from '@/utils/ElectronDragHelper';
 const {app} = remote;
 
 @Component(
@@ -28,6 +29,7 @@ export default class HomeView extends Vue {
 
   mounted() {
     this.http_GetNeedDownloadList();
+    ElectronDragHelper('#top-nav-bar');
   }
 
   public get bNeedUpdate():boolean 

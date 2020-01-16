@@ -88,7 +88,7 @@ import { GConst } from '@/Global/GConst';
             titleBarStyle: 'hidden',
             // alwaysOnTop :true,
             backgroundColor: '#fffffff',
-            resizable: false,
+            //resizable: false,
             icon:'./ico.jpg',
             webPreferences: {
               nodeIntegration: true,

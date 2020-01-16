@@ -23,7 +23,7 @@ import { GConst } from '@/Global/GConst';
 
 @Component({
     components:{
-      'qing-progress' : QingProgress
+      'qing-progress'  : QingProgress
     }
 })
 export default class UpdatorView extends Vue 
