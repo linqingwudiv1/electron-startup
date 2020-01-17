@@ -9,6 +9,8 @@ import _ from 'lodash';
 import Updator from './Updator/index.vue';
 import Startup from './Startup/index.vue';
 import { ElectronDragHelper } from '@/utils/ElectronDragHelper';
+
+const drag = require('electron-drag-ex') ;
 const {app} = remote;
 
 @Component(
@@ -28,8 +30,12 @@ export default class HomeView extends Vue {
   };
 
   mounted() {
+
     this.http_GetNeedDownloadList();
-    ElectronDragHelper('#top-nav-bar');
+    var clear = drag('#top-nav-bar');
+    // Call the returned function to make the element undraggable again.
+    //clear();
+    // ElectronDragHelper('#top-nav-bar');
   }
 
   public get bNeedUpdate():boolean 

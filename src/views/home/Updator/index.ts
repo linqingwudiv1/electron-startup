@@ -5,16 +5,16 @@ const {shell} =  require('electron').remote;
 import shelljs,{mkdir} from 'shelljs';
 import { createWriteStream, existsSync,  statSync, unlinkSync } from 'fs';
 import { dirname,resolve,join } from 'path'; 
-import { ipcRenderer, IpcRendererEvent, remote } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 const { app } = remote;
 import _, { delay } from 'lodash';
-import { DownloadFilePartMutilple, GetNeedDownloadList } from '@/API/core';
+import { DownloadFilePartMutilple } from '@/API/core';
 import AdmZip from 'adm-zip-ex';
 import { from, range } from 'linq';
 import request from 'request';
 // custom component 
 import QingProgress from '@/components/progress/index.vue';
-import { RequestProgressState, RequestProgress } from 'request-progress-ex';
+import { RequestProgressState } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from '@/Model/Request/data';
 import GMPApp from '@/Electron/MP/GMPApp';
@@ -72,9 +72,7 @@ export default class UpdatorView extends Vue
     let handlefilecount = from ( this.downinfo.handlefiles )
                                  .where( x => x[1] === true )
                                  .count();
-                                 
-    //console.log('handlefilecount : ', handlefilecount);
-    
+
     let ret_val = ( handlefilecount / this.downinfo.FileCount) * 100;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
     return ret_val;
@@ -133,6 +131,7 @@ export default class UpdatorView extends Vue
   }
 
 //#region 这里属于逻辑处理，极少的页面交互逻辑,有时间的话可以优先解耦代码
+
   /**
    * 分段下载....
    * @param item 

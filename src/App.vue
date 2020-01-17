@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="titlebar" class="titlebar-btn-group">
-      <el-button id="btn-close" size="medium" type="text" icon="el-icon-close"></el-button>
+      <el-button id="btn-close" size="medium" type="text" icon="el-icon-close" v-on:click="onclick_close"></el-button>
     </div>
     <router-view/>
   </div>
@@ -14,10 +14,10 @@
   -moz-osx-font-smoothing: grayscale;
   .titlebar-btn-group
     position  : fixed;
-    top:10px;
-    right :10px;
-    background :blue;
-    padding 20px;
+    top   : 10px;
+    right : 10px;
+    // background :blue;
+    // padding 20px;
     .el-button
       -webkit-app-region  : none;
       padding    : 8px;

@@ -19,7 +19,8 @@
     "express:run": "vue-cli-service express:run",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
-    "typedocs": "typedoc"
+    "typedocs": "typedoc",
+    "rebuild": "electron-rebuild -f -w win-mouse"
   },
   "main": "background.js",
   "dependencies": {
@@ -34,8 +35,8 @@
     "axios": "^0.19.1",
     "chai-as-promised": "^7.1.1",
     "core-js": "^3.4.3",
-    "custom-electron-titlebar": "^3.2.1",
     "default-passive-events": "^1.0.10",
+    "electron-drag-ex": "^1.2.2-beta.12",
     "element-ui": "2.13.0",
     "faker": "^4.1.0",
     "gsap": "^3.0.4",
@@ -77,6 +78,7 @@
     "electron": "^8.0.0-beta.6",
     "electron-devtools-installer": "^2.2.4",
     "electron-icon-builder": "^1.0.2",
+    "electron-rebuild": "^1.8.8",
     "qs": "^6.9.1",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",

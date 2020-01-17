@@ -12,6 +12,20 @@
     <noscript>
       <strong>We're sorry but bj-program-startup doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    <style>
+      #testcom
+      {
+        width:100px;
+        height:100px;
+        background: greenyellow;
+      }
+    </style>
+    <div id="testcom"></div>
+    <script>
+      var drag = require('electron-drag-ex');
+      var clear = drag('#testcom');
+      //clear();
+    </script>
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
