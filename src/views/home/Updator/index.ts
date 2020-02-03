@@ -74,20 +74,33 @@ export default class UpdatorView extends Vue
   
   public set bPause(val:boolean)
   {
-    console.log('bPause....');
+
+    console.log('bPause',  this.DownloadDirList.length);
     this.DownloadDirList.forEach((item:DownloadItem) => 
     {
-      item.requests.forEach( ( req:RequestProgress ) =>
+      console.log('requect count : ', item.requests.length);
+
+      if (item.requests.length === 0 && !val )
       {
-        if (val)
+        this.reqBranch(item);
+      }
+      else 
+      {
+        item.requests.forEach( ( req:RequestProgress ) =>
         {
-          req.pause();
-        }
-        else 
-        {
-          req.resume();
-        }
-      });
+          if (val)
+          {
+            req.pause();
+            console.log('Pause....');
+          }
+          else 
+          {
+            console.log('resume....');
+            req.resume();
+          }
+        });
+      }
+
     });
 
     this.downinfo.bPause = val;
@@ -154,7 +167,7 @@ export default class UpdatorView extends Vue
 
     let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
     ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
-    console.log('--------------: ',Total_downloadSize,Cur_downloadSize,ret_val );
+    //console.log('--------------: ',Total_downloadSize,Cur_downloadSize,ret_val );
     return ret_val;
   }
   
@@ -250,18 +263,20 @@ export default class UpdatorView extends Vue
         return;
       }
 
-      item.requests.splice(item.requests.indexOf(req), 1);
       item.transferSize = item.byte_pos_end_def + 1;
       item.segment_transferSize = item.byte_pos_end_def - item.byte_pos_start_def + 1;
+
+
+      if (!this.bPause)
+      {
+        item.requests.splice(item.requests.indexOf(req), 1);
+        item.segment++;
+        this.download_progress(item, onsuccessful );
+      }
 
       if ( item.isCompleted )
       {
         this.downinfo.handlefiles.push( ['下载完成:' + fullpath, true] );
-      }
-      else 
-      {
-        item.segment++;
-        this.download_progress(item, onsuccessful );
       }
     })
     .pipe( createWriteStream( fullpath, { flags: 'a+' } ) )

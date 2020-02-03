@@ -14,15 +14,15 @@ export default class GameSettingDialogComponent extends Vue
 
     };
 
-    public form:{
-        name:      string       ,
-        region:    string       ,
-        date1:     string       ,
-        date2:     string       ,
+    public form: {
+        name:      String       ,
+        region:    String       ,
+        date1:     String       ,
+        date2:     String       ,
         delivery:  boolean      ,
         type:      Array<any>   ,
-        resource:  string       ,
-        desc:      string
+        resource:  String       ,
+        desc:      String
     } = {
         name:   ''      ,
         region: ''      ,
@@ -50,13 +50,17 @@ export default class GameSettingDialogComponent extends Vue
         this.bDialog = false;
     }
 
-    //
+    /**
+     * 
+     */
     get bDialog():boolean
     {
         return this.$store.state.GlobalDialog.bGameSetting;
     }
 
-    //
+    /**
+     * 
+     */
     set bDialog(val:boolean)
     {
         this.$store.commit( 'ShowGameSettingDialog',  val);

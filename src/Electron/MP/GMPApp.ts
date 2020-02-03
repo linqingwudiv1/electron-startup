@@ -37,13 +37,14 @@ export default class GMPApp
           }
         });
       }
+
       return GMPApp.sysStore;
     }
 
     /** UE4版本号 */
     public static get UEVersion ():string
     {
-      if (existsSync('UE/version.json'))
+      if ( existsSync('UE/version.json') )
       {
         return readFileSync( 'UE/version.json', { encoding: 'utf-8' } );
       }
