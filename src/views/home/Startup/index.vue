@@ -34,12 +34,12 @@
                    type="info"
                    icon="el-icon-setting"
                    v-on:click="onclick_setting">系统设置</el-button>
-                   
+<!--                    
         <el-button id="btn-startup"   
          class="ele-item animated zoomIn" 
          size="medium" type="success" 
          icon="el-icon-switch-button"
-         v-on:click="onclick_startup">　启动程序　</el-button> 
+         v-on:click="onclick_startup">　启动程序　</el-button>  -->
 
       </div>
   </div>

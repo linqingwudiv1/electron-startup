@@ -9,11 +9,11 @@ import _ from 'lodash';
 import Updator from './Updator/index.vue';
 import Startup from './Startup/index.vue';
 import { ElectronDragHelper } from '@/utils/ElectronDragHelper';
-
 const drag = require('electron-drag-ex') ;
 const {app} = remote;
 
-@Component(
+
+@Component( 
 {
   components: 
   {
@@ -22,6 +22,7 @@ const {app} = remote;
   }
 })
 export default class HomeView extends Vue {
+
   public DownloadDirList:Array<DownloadItem> = [];
 
   public loadingArgs:any = 
@@ -30,12 +31,8 @@ export default class HomeView extends Vue {
   };
 
   mounted() {
-
+    let clear = drag('#top-nav-bar');
     this.http_GetNeedDownloadList();
-    var clear = drag('#top-nav-bar');
-    // Call the returned function to make the element undraggable again.
-    //clear();
-    // ElectronDragHelper('#top-nav-bar');
   }
 
   public get bNeedUpdate():boolean 
@@ -44,18 +41,18 @@ export default class HomeView extends Vue {
   }
   
   private http_GetNeedDownloadList()
-  {
+  { 
     //延迟执行,保证动画连续性
     this.loadingArgs.bDownloadList = true;
 
-    delay( ()=>
+    delay( () =>
     {
       GetNeedDownloadList().then( ( res:any ) =>
       {
         this.loadingArgs.bDownloadList = false;
         this.DownloadDirList = [];
         res.data.forEach( (item:any) => {
-          this.DownloadDirList.push(new DownloadItem(item.title ,item.uri ,item.fileType ) );
+          this.DownloadDirList.push( new DownloadItem(item.title ,item.uri ,item.fileType ) );
         });
       }).catch( (error:any)=>
       {        
@@ -79,8 +76,6 @@ export default class HomeView extends Vue {
   }
 
   //#region Event 
-
-
   public openUrl = _.throttle( (url) => {
     shell.openExternal(url);
   });

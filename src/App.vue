@@ -16,8 +16,6 @@
     position  : fixed;
     top   : 10px;
     right : 10px;
-    // background :blue;
-    // padding 20px;
     .el-button
       -webkit-app-region  : none;
       padding    : 8px;

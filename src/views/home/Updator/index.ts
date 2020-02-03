@@ -14,7 +14,7 @@ import { from, range } from 'linq';
 import request from 'request';
 // custom component 
 import QingProgress from '@/components/progress/index.vue';
-import { RequestProgressState } from 'request-progress-ex';
+import { RequestProgressState, RequestProgress } from 'request-progress-ex';
 // data 
 import { IDownloadPacketInfo, DownloadItem, EM_DownloadItemFileType, EM_DownloadItemState } from '@/Model/Request/data';
 import GMPApp from '@/Electron/MP/GMPApp';
@@ -33,6 +33,9 @@ export default class UpdatorView extends Vue
     version: '0.1.0'
   };
 
+  @Prop({default: []})
+  public DownloadDirList!:Array<DownloadItem>;
+
   /** */
   public bInit:boolean = false;
   
@@ -48,9 +51,6 @@ export default class UpdatorView extends Vue
   /** */
   mounted():void
   {
-    let vedio = this.$refs.vedio as any;  
-    console.log(vedio);
-    vedio['disablePictureInPicture'] = true;
   }
 
   //#region http biz
@@ -64,6 +64,46 @@ export default class UpdatorView extends Vue
     return GConst.BaseUrl;
   }
 
+
+
+  /** 是否是暂停状态 */
+  public get bPause():boolean
+  {
+    return this.downinfo.bPause;
+  }
+  
+  public set bPause(val:boolean)
+  {
+    console.log('bPause....');
+    this.DownloadDirList.forEach((item:DownloadItem) => 
+    {
+      item.requests.forEach( ( req:RequestProgress ) =>
+      {
+        if (val)
+        {
+          req.pause();
+        }
+        else 
+        {
+          req.resume();
+        }
+      });
+    });
+
+    this.downinfo.bPause = val;
+  }
+
+
+
+  /** 是否有接收数据 */
+  public get bRevice():boolean
+  {
+    let ret_result = from(this.DownloadDirList)
+                     .where(x => x.bRevice)
+                     .count() > 0;
+
+    return ret_result;
+  }
 
   /** 安装进度 */
   public get percentage_mountprocess():number
@@ -91,6 +131,36 @@ export default class UpdatorView extends Vue
   //#endregion
 
 
+  /** 是否可更新 */
+  public get bUpdate():boolean 
+  {
+    let count =  from  ( this.DownloadDirList )
+                 .where( x => x.state !== EM_DownloadItemState.Completed )
+                 .count();
+
+    return count > 0;
+  }
+
+  /** */
+  public get percentage_downprocess():number
+  {
+    let Total_downloadSize = from( this.DownloadDirList )
+                             .select( x => x.contentSize  )
+                             .defaultIfEmpty(0).sum();
+
+    let Cur_downloadSize   = from( this.DownloadDirList )
+                             .select( x => x.transferSize )
+                             .defaultIfEmpty(0).sum();
+
+    let ret_val = ( Cur_downloadSize / Total_downloadSize ) * 100 ;
+    ret_val = isNaN(ret_val) ? 0 : parseInt(ret_val.toFixed(2));
+    console.log('--------------: ',Total_downloadSize,Cur_downloadSize,ret_val );
+    return ret_val;
+  }
+  
+  public percent_download:Array<number> = [];
+
+
   /**
    * 
    */
@@ -102,6 +172,10 @@ export default class UpdatorView extends Vue
       let stdout = mkdir('-p', resolve( GMPApp.SystemStore.get('CacheDir') )).stdout;
     }
 
+    this.DownloadDirList.forEach( (item:DownloadItem, index:number) => 
+    {
+      this.reqBranch(item);
+    });
   }
 
   /**
@@ -210,7 +284,6 @@ export default class UpdatorView extends Vue
   {
     this.downinfo.handlefiles.push( [ '下载失败:' + decodeURI(res.request.href) , false ] );
     //item.requests.splice( item.requests.indexOf( res.request as RequestProgress ), 1 );
-
     //res.destroy();
 
     item.state = EM_DownloadItemState.Error;
@@ -282,22 +355,27 @@ export default class UpdatorView extends Vue
 
 //#region 页面响应事件处理
 
+public onclick_update = _.throttle( () =>
+{
+  this.downinfo.FileCount    = this.DownloadDirList.length;
+  this.handlewaitdownloadlist()     ;
+}, 500);
 
-  // 启动应用节流
-  public onclick_startup =_.throttle( () =>
+  // 暂停下载
+  public onclick_pause = _.throttle( () =>
   {
-    // if ( this.bStartup )
-    {
-      ipcRenderer.send( 'emp_startup' );
-    }
-    // else 
-    {
-      this.$alert(`正在更新应用..请等待( wait updating application )`, {
-        confirmButtonText: '确定(confirm)',
-        callback: (action:any) => { }
-      });
-    }
-  }, 500);
-}
+    this.bPause = true;
+  }, 150);
+
+
+  // 继续下载
+  public onclick_resume = _.throttle( ()=>
+  {
+    this.bPause = false;
+  }, 150);
+
 
 //#endregion
+
+}
+

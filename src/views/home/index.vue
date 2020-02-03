@@ -28,9 +28,11 @@
       <el-divider></el-divider> 
     </div>
     <div class="content">
-      <template v-if="bNeedUpdate">
-        <!-- <updator v-bind:download-dir-list="DownloadDirList"></updator> -->
+      <template v-if="!bNeedUpdate">
         <statup></statup>
+      </template>
+      <template v-else>        
+        <updator v-bind:download-dir-list="DownloadDirList"></updator>
       </template>
     </div>
   </div>

@@ -17,7 +17,7 @@ export function DownloadFile(path:string)
 
 export function DownloadFilePartMutilple(path:string, start:number, end:number)
 {
-    return progress( service.get( '/reree/' + encodeURI(path), 
+    return progress( service.get(  encodeURI(path), 
     {
         headers: {
             'range': `bytes=${start}-${end}`

@@ -1,7 +1,7 @@
 <template>
   <div class="main-com">
       <div class="content">
-        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}  ----- {{test}} ------ {{reqCount_failed}}</span>
+        <span>{{AppInfo.version}} 当前请求数:{{ downinfo.curReqCount}}  ----- {{test}} ------ <!--{{reqCount_failed}}--></span>
 
         <div class="unzipfilelistcontainer">
           <div id="unzipfilelist">
@@ -36,12 +36,11 @@
             </template>
           </div>
         </div>
-        <template v-if="!bStartup">
-          <template v-if="!bRevice">
+        <template v-if="!bRevice">
             <el-button class="ele-item animated zoomIn supfast" 
                        size="medium"
                        type="primary"
-                       @click="onclick_update">更新应用</el-button>
+                       v-on:click="onclick_update">更新应用</el-button>
           </template>
           <template v-else>
             <template v-if="!bPause">
@@ -57,16 +56,6 @@
                          v-on:click="onclick_resume">继续下载</el-button> 
             </template>
           </template>
-        </template>
-        <template v-else>
-          <el-button class="ele-item animated zoomIn supfast" 
-                     size="medium" type="success" 
-                     v-bind:disabled="!bUnpacking"
-                     v-on:click="onclick_startup">启动应用</el-button>
-        </template>
-          <el-button class="ele-item animated zoomIn supfast" 
-             size="medium" type="success" 
-             v-on:click="onclick_startup">启动应用</el-button>
       </div>
   </div>
 </template>
