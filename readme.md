@@ -24,6 +24,7 @@ Run:
 
 
 ```js
+npm install -g node-gyp
 npm install -g ts-node
 npm install -g typescript
 ```
