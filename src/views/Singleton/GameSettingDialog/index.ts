@@ -50,11 +50,12 @@ export default class GameSettingDialogComponent extends Vue
         this.bDialog = false;
     }
 
+
     /**
      * 
      */
     get bDialog():boolean
-    {
+    { 
         return this.$store.state.GlobalDialog.bGameSetting;
     }
 
