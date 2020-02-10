@@ -6,8 +6,8 @@ import { Store } from 'vuex';
  * 游戏配置相关Dialog
  */
 @Component(
-    {
-    })
+{
+})
 export default class GameSettingDialogComponent extends Vue 
 {
     mounted() {
@@ -50,7 +50,6 @@ export default class GameSettingDialogComponent extends Vue
         this.bDialog = false;
     }
 
-
     /**
      * 
      */
@@ -66,4 +65,5 @@ export default class GameSettingDialogComponent extends Vue
     {
         this.$store.commit( 'ShowGameSettingDialog',  val);
     }
+
 }
