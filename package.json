@@ -19,8 +19,8 @@
     "express:run": "vue-cli-service express:run",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
-    "typedocs": "typedoc",
-    "rebuild": "electron-rebuild -f -w win-mouse"
+    "rebuild": "electron-rebuild -f -w win-mouse",
+    "typedocs": "typedoc"
   },
   "main": "background.js",
   "dependencies": {
