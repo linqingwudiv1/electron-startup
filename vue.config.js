@@ -17,7 +17,7 @@ module.exports = {
       },
       express: {
         shouldServeApp: true,
-        serverDir: './srv'
+        serverDir: './DebugServer'
       }
     }
   }

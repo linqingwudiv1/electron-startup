@@ -76,7 +76,7 @@
     "@vue/devtools": "^5.3.3",
     "@vue/test-utils": "1.0.0-beta.29",
     "chai": "^4.1.2",
-    "electron": "^8.0.0-beta.9",
+    "electron": "^8.2.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-icon-builder": "^1.0.2",
     "electron-rebuild": "^1.8.8",
@@ -84,7 +84,7 @@
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
     "typescript": "^3.7.5",
-    "vue-cli-plugin-electron-builder": "^1.4.4",
+    "vue-cli-plugin-electron-builder": "^1.4.6",
     "vue-cli-plugin-express": "^1.0.2",
     "vue-template-compiler": "^2.6.11",
     "vuepress": "^1.2.0"
